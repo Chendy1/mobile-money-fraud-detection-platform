@@ -7,6 +7,7 @@
 | [003](adr/ADR-003-in-process-queue.md) | In-process queue instead of Redpanda/Kafka | Accepted |
 | [004](adr/ADR-004-duckdb-parquet.md) | DuckDB + Parquet instead of a warehouse | Accepted |
 | [005](adr/ADR-005-compose-not-kubernetes.md) | Docker Compose instead of Kubernetes | Accepted |
+| [006](adr/ADR-006-package-layout.md) | Installable `src/mmrisk` package | Accepted |
 
 Planned: time-based validation, PR-AUC, shared feature library vs feature store, ECS vs EKS.
 
