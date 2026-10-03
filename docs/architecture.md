@@ -5,7 +5,7 @@ Local-first and $0. Cloud is optional and separate. One shared feature library f
 
 ## System overview (local)
 ```mermaid
-flowchart LR
+flowchart TB
   G[Synthetic generator] --> R[(Raw Parquet)]
   R --> V[Validation + cleaning]
   V --> C[(Cleaned Parquet / DuckDB)]
