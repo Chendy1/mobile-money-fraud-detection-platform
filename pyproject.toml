@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mmrisk"
+version = "0.1.0"
+description = "M-Pesa-inspired mobile-money transaction risk scoring platform (synthetic data only)."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Clyde Adili" }]
+# Runtime dependencies are added phase by phase, only when first needed.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "training", "apps"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
