@@ -11,7 +11,10 @@ requires-python = ">=3.11"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Clyde Adili" }]
 # Runtime dependencies are added phase by phase, only when first needed.
-dependencies = []
+dependencies = ["numpy>=1.26", "polars>=1.0"]
+
+[project.scripts]
+mmrisk-generate = "mmrisk.generation.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
