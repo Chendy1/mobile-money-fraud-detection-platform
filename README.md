@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 1 complete (repository, environment, CI). The data generator and models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 2 complete (synthetic data generator). Ingestion, features and models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -25,11 +25,22 @@ Run from the repository root. Requires Python 3.11+ and Git.
 If script execution is blocked: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 Linux/macOS: `make setup`, `make test`, `make lint`.
 
+## Data generation
+Reproducible, seeded, synthetic. Run from the repository root (after `.\scripts\dev.ps1 setup`):
+```powershell
+.\scripts\dev.ps1 generate
+# or with options:
+.\.venv\Scripts\python -m mmrisk.generation --num-customers 5000 --num-transactions 200000 `
+  --fraud-rate 0.005 --seed 42 --start-date 2025-01-01 --end-date 2025-12-31 --output-dir data/raw
+```
+Writes Parquet tables, noisy delayed labels, hidden ground truth and `manifest.json` to `data/raw/` (git-ignored; regenerate any time). Details: [data dictionary](docs/data-dictionary.md).
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
 - [Threat model](docs/threat-model.md)
+- [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Project state](docs/PROJECT_STATE.md)
 
