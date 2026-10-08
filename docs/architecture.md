@@ -6,9 +6,14 @@ Local-first and $0. Cloud is optional and separate. One shared feature library f
 ## System overview (local)
 ```mermaid
 flowchart TB
-  G[Synthetic generator] --> R[(Raw Parquet)]
-  R --> V[Validation + cleaning]
-  V --> C[(Cleaned Parquet / DuckDB)]
+  G[Synthetic generator] --> L[(Source files: data/raw)]
+  L --> RW[(Raw layer: immutable copies)]
+  RW --> V[Structural validation gates]
+  V --> Q[(Quarantine: rejected rows + reason)]
+  V --> VL[(Validated layer)]
+  VL --> DD[Dedup + standardise]
+  DD --> Q
+  DD --> C[(Cleaned layer, daily partitions)]
   C --> F[Shared feature library]
   F --> T[Training + MLflow]
   T --> M[(Model registry)]
@@ -21,12 +26,13 @@ flowchart TB
 ```
 
 ## Data flow
-1. Generator writes **raw** Parquet, immutable, partitioned by date.
-2. Validation checks schema, nulls, duplicates, ranges, categories, referential integrity, freshness.
-3. **Cleaned** layer: deduplicated, idempotent re-runs, lineage columns (source file, run id, ingest time).
-4. Shared feature library computes behavioral features using only past data (point-in-time correct).
-5. Model scores each transaction; the API returns score, level, model version, timestamp and SHAP explanation.
-6. Predictions are stored for the dashboard and drift monitoring.
+1. The generator writes source files to `data/raw/` (it plays the role of a source-system export).
+2. Ingestion copies each file verbatim into the **raw** layer (`data/processed/raw`, immutable) and records it in a ledger keyed by the file's SHA-256, so re-runs are idempotent.
+3. Structural gates (readable, schema, types, required fields) split rows into **validated** and **quarantine** (with a reason). Phase 4 adds the domain quality rules.
+4. Duplicates are resolved first-write-wins; identical copies are dropped and counted, conflicting copies are quarantined. The **cleaned** layer is standardised and partitioned by event date, with lineage columns on every row (`_batch_id`, `_source_file`, `_row_number`, `_ingested_at`).
+5. Shared feature library computes behavioral features using only past data (point-in-time correct).
+6. Model scores each transaction; the API returns score, level, model version, timestamp and SHAP explanation.
+7. Predictions are stored for the dashboard and drift monitoring.
 
 ## ML lifecycle
 Time-based split, then rule baseline, Logistic Regression, Random Forest, LightGBM. Select on PR-AUC. Choose LOW/MEDIUM/HIGH thresholds from a cost model. Explain with SHAP, document in a model card, log to MLflow. A candidate replaces the champion only if it passes quality gates **and** receives manual approval. Rollback repoints the champion alias to the previous version.
