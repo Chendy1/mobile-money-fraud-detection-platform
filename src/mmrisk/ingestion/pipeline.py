@@ -29,6 +29,7 @@ from mmrisk.ingestion.specs import (
     table_from_filename,
 )
 from mmrisk.ingestion.validate import schema_problems, validate_frame
+from mmrisk.validation.rules import RuleContext, apply_rules
 
 INGESTED = "INGESTED"
 SKIPPED = "SKIPPED_DUPLICATE_BATCH"
@@ -159,6 +160,7 @@ def _record(table, path, sha, batch_id, status, ts, **extra) -> dict:
         "rows_duplicate": 0,
         "rows_conflict": 0,
         "rows_cleaned": 0,
+        "source_schema": None,
         "ingested_at": ts.isoformat(),
     }
     base.update(extra)
@@ -178,9 +180,19 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
         return BatchResult(table, path.name, batch_id, SKIPPED, rows_in=prior["rows_in"])
     ts = _now(now)
 
-    def reject(reason: str, rows_in: int = 0) -> BatchResult:
+    def reject(reason: str, rows_in: int = 0, source_schema: dict | None = None) -> BatchResult:
         ledger.upsert(
-            _record(table, path, sha, batch_id, REJECTED, ts, reason=reason, rows_in=rows_in)
+            _record(
+                table,
+                path,
+                sha,
+                batch_id,
+                REJECTED,
+                ts,
+                reason=reason,
+                rows_in=rows_in,
+                source_schema=source_schema,
+            )
         )
         return BatchResult(table, path.name, batch_id, REJECTED_BATCH, reason, rows_in)
 
@@ -189,12 +201,16 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
         df = pl.read_parquet(path)
     except Exception as exc:  # unreadable or corrupt file
         return reject(f"UNREADABLE_FILE:{type(exc).__name__}")
+    source_schema = {c: str(t) for c, t in df.schema.items()}
     problems = schema_problems(df, spec)
     if problems:
-        return reject(";".join(problems), df.height)
+        return reject(";".join(problems), df.height, source_schema)
 
     result = validate_frame(df, spec)
-    valid = _standardize(result.valid, spec)
+    valid, rule_rejects = apply_rules(
+        _standardize(result.valid, spec), table, spec.columns, RuleContext(as_of=ts)
+    )
+    rows_rejected = result.rejects.height + rule_rejects.height
     lineage = [
         pl.lit(batch_id).alias("_batch_id"),
         pl.lit(path.name).alias("_source_file"),
@@ -205,7 +221,7 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
     )
     new, dups, conflicts = _dedup(valid, spec, existing)
 
-    if df.height != result.rejects.height + valid.height or valid.height != (
+    if df.height != rows_rejected + valid.height or valid.height != (
         new.height + dups.height + conflicts.height
     ):
         raise RuntimeError("row accounting mismatch; refusing to write")
@@ -213,6 +229,7 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
     validated = valid.with_columns(lineage)
     cleaned = new.select("_row_number", *spec.columns).with_columns(lineage)
     q_validation = _quarantine_rows(result.rejects, table, batch_id, path.name, ts, "VALIDATION")
+    q_rules = _quarantine_rows(rule_rejects, table, batch_id, path.name, ts, "RULES")
     q_conflict = _quarantine_rows(
         conflicts.select(
             "_row_number",
@@ -225,7 +242,7 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
         ts,
         "DEDUP",
     )
-    quarantine = pl.concat([q_validation, q_conflict])
+    quarantine = pl.concat([q_validation, q_rules, q_conflict])
 
     order = ([spec.partition_source] if spec.is_fact else []) + list(spec.key) + ["_row_number"]
     if spec.is_fact:
@@ -255,7 +272,8 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
             ts,
             sequence=sequence,
             rows_in=df.height,
-            rows_rejected=result.rejects.height,
+            source_schema=source_schema,
+            rows_rejected=rows_rejected,
             rows_duplicate=dups.height,
             rows_conflict=conflicts.height,
             rows_cleaned=new.height,
@@ -272,7 +290,7 @@ def ingest_file(path: Path | str, lake_root: Path | str, now: Clock | None = Non
         INGESTED,
         None,
         df.height,
-        result.rejects.height,
+        rows_rejected,
         dups.height,
         conflicts.height,
         new.height,
