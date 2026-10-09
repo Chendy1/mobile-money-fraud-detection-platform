@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest
+.PHONY: setup lint format test generate ingest quality
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev]"
 lint:
@@ -12,3 +12,5 @@ generate:
 	python -m mmrisk.generation
 ingest:
 	python -m mmrisk.ingestion run
+quality:
+	python -m mmrisk.validation check
