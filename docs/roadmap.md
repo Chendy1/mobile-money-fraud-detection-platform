@@ -9,4 +9,4 @@ Each phase ends with tests, docs, a CHANGELOG entry, commits, and a stop for app
 
 **Delivery:** 24 Final docs; 25 Demo scripts; 26 Portfolio, resume, interview prep; 27 Evidence-based scorecard; 28 GitHub release.
 
-Status: Phase 0 complete.
+Status: Phases 0 to 4 complete. Phases 2 to 4 are verified in the assistant's sandbox only; see `docs/PROJECT_STATE.md` for what has been verified on the developer's machine.

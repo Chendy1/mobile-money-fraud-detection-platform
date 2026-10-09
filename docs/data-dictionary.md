@@ -91,7 +91,7 @@ Note the two meanings of "raw": `data/raw/` is the **source extract** written by
 ```
 data/processed/
   raw/<table>/ingest_date=YYYY-MM-DD/<batch_id>.parquet          verbatim copy of the source file
-  validated/<table>/<partition>=YYYY-MM-DD/<batch_id>.parquet    rows that passed the gates (dimensions: <batch_id>.parquet)
+  validated/<table>/<partition>=YYYY-MM-DD/<batch_id>.parquet    rows that passed the gates and domain rules (dimensions: <batch_id>.parquet)
   quarantine/<table>/<batch_id>.parquet                          rejected or conflicting rows
   cleaned/<table>/<partition>=YYYY-MM-DD/<batch_id>.parquet      deduplicated, standardised rows
   _meta/ledger.json                                              one record per batch
@@ -101,11 +101,14 @@ Tables ingested: counties, customers, merchants, agents, devices, transactions, 
 
 **Lineage columns** on validated and cleaned rows: `_batch_id` (first 16 hex characters of the source file's SHA-256), `_source_file` (file name only), `_row_number` (0-based position in the source file), `_ingested_at` (UTC).
 
-**Quarantine columns:** `_table`, `_batch_id`, `_source_file`, `_row_number`, `_stage` (VALIDATION or DEDUP), `_reason`, `_row_json` (the original row), `_quarantined_at`.
-Reasons: `CAST_FAILED:<col>`, `NULL_REQUIRED:<col>`, `EMPTY_REQUIRED:<col>`, `CONFLICTING_DUPLICATE_IN_BATCH`, `CONFLICTING_DUPLICATE_OF_EXISTING`.
+**Quarantine columns:** `_table`, `_batch_id`, `_source_file`, `_row_number`, `_stage` (VALIDATION, RULES or DEDUP), `_reason`, `_row_json` (the original row), `_quarantined_at`.
+Reasons: `CAST_FAILED:<col>`, `NULL_REQUIRED:<col>`, `EMPTY_REQUIRED:<col>` (stage VALIDATION); `RULE:<name>` (stage RULES, catalogue in `docs/data-quality.md`); `CONFLICTING_DUPLICATE_IN_BATCH`, `CONFLICTING_DUPLICATE_OF_EXISTING` (stage DEDUP).
 
 **Whole-batch rejection** (nothing reaches validated/cleaned; the raw copy is kept): `UNREADABLE_FILE:<error>`, `MISSING_COLUMNS:<cols>`, `UNEXPECTED_COLUMNS:<cols>`.
 
 **Standardisation in the cleaned layer:** text is trimmed; identifiers and category-like columns are upper-cased; blank optional text becomes null. Original values remain in the raw layer.
 
 **Source file naming:** `<table>.parquet`, or `<table>__<anything>.parquet` for additional batches (late data, replays).
+
+**Ledger (`_meta/ledger.json`)** records per batch: table, source file, SHA-256, status (COMPLETE or REJECTED), reason, row counts (`rows_in`, `rows_rejected`, `rows_duplicate`, `rows_conflict`, `rows_cleaned`), the source schema as received (used for drift detection), and the ingestion time.
+**Data-quality report (`_meta/dq_report.json`)** is written by `python -m mmrisk.validation check`; see `docs/data-quality.md`.
