@@ -31,3 +31,15 @@ Be careful with the path: this deletes generated data only (it is git-ignored an
 
 **Git warns "LF will be replaced by CRLF"**
 Harmless. `.gitattributes` normalises line endings in the repository.
+
+**`quality` reports FAIL or WARN**
+Run `.\.venv\Scripts\python -m mmrisk.validation check --verbose` and see the table in [data-quality.md](data-quality.md). A quarantined transaction usually also produces an orphan-label warning; read the quarantine first.
+
+**`quality` says "no ledger"**
+Run `.\scripts\dev.ps1 ingest` first.
+
+**Rows are quarantined as `RULE:timestamp_not_future`**
+The rule compares timestamps with the time of ingestion. If your computer's clock is wrong, or you generated data ending in the future, those rows are quarantined by design.
+
+**The test suite takes minutes**
+Normal: the data-quality tests build many small lakes. To run a subset: `.\.venv\Scripts\python -m pytest tests/unit -q`.

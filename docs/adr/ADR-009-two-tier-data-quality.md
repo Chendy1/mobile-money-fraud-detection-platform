@@ -1,0 +1,9 @@
+# ADR-009: Two-tier data quality (row rules quarantine, dataset checks report)
+**Context.** Bad data comes in two forms: individual invalid rows (impossible amounts, unknown categories) and dataset-level problems (missing days, orphan references, drift, damage to stored files). One mechanism cannot handle both well: rejecting a whole batch for one bad row loses good data, and judging a dataset row by row hides systemic problems.
+**Decision.**
+- Row rules run inside ingestion, after the structural gates and standardisation. A violating row goes to quarantine as `RULE:<name>` with its original values; clean rows continue.
+- Dataset checks run after ingestion over the cleaned lake and produce PASS / WARN / FAIL with explicit thresholds, a JSON report and an exit code. They never modify data.
+- Rules and thresholds live in code and configuration (`mmrisk.validation`), with a test for every rule, a guard that keeps configuration consistent with the generator, and a test that clean generated data yields zero WARN and FAIL.
+- Referential integrity is a dataset check, not a row rule, because reference data may legitimately arrive later than the facts that use it.
+**Alternatives.** A data-quality framework such as Great Expectations or Soda (rich features, but a large dependency and its own configuration language, for a rule set this size); rejecting whole batches on any violation (simple, but loses good rows); fixing bad rows automatically (hides defects and invents data).
+**Consequences.** Bad rows are visible and recoverable, good rows keep flowing, and systemic problems surface in one report. Costs: rules are hand-written and only catch known defect types; thresholds are uncalibrated starting points; quarantining a transaction creates a knock-on orphan-label warning; checks read the whole cleaned layer and will need partition pruning or DuckDB at larger scale. Distribution drift is handled separately in Phase 15.

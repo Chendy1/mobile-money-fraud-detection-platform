@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 3 complete (layered ingestion). Data-quality rules, features and models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 4 complete (data quality). Exploratory analysis, features and models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -43,11 +43,20 @@ Builds raw, validated, quarantine and cleaned layers from the generated files. S
 ```
 See [data dictionary](docs/data-dictionary.md#data-lake-layers-phase-3) and [ADR-008](docs/adr/ADR-008-layered-ingestion.md). Problems? [Troubleshooting](docs/troubleshooting.md).
 
+## Data quality
+Bad rows are quarantined with a reason during ingestion; a separate command checks the whole lake and reports PASS / WARN / FAIL.
+```powershell
+.\scripts\dev.ps1 quality                                  # show WARN / FAIL checks
+.\.venv\Scripts\python -m mmrisk.validation check --verbose   # show every check
+```
+Rules, thresholds and "what happens when bad data enters the system?": [docs/data-quality.md](docs/data-quality.md).
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
 - [Threat model](docs/threat-model.md)
+- [Data quality](docs/data-quality.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)
