@@ -43,3 +43,15 @@ The rule compares timestamps with the time of ingestion. If your computer's cloc
 
 **The test suite takes minutes**
 Normal: the data-quality tests build many small lakes. To run a subset: `.\.venv\Scripts\python -m pytest tests/unit -q`.
+
+**`ModuleNotFoundError: duckdb` or `matplotlib`**
+Install the EDA extra: `.\.venv\Scripts\python -m pip install -e ".[dev,eda]"` (or re-run `.\scripts\dev.ps1 setup`).
+
+**`eda` says "lake ... not found" or "has no completed data"**
+Run `.\scripts\dev.ps1 generate` and `.\scripts\dev.ps1 ingest` first.
+
+**The report has no "Audit against ground truth" section**
+The audit needs `data/raw/ground_truth/`. Pass `--source <dir>` if the extract is elsewhere. `--no-truth` skips it on purpose.
+
+**Numbers in the report differ slightly from the committed copy**
+The report reflects whatever data is in your lake. Different seeds, dates or library versions change counts; regenerate with the default settings to compare.

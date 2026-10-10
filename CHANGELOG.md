@@ -4,6 +4,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 5: exploratory data analysis. `python -m mmrisk.eda` reads the cleaned lake with DuckDB and writes
+  seven question-driven figures and `docs/eda-report.md` (all numbers computed): class balance, label delay
+  and maturity, time rhythm, hourly pattern, absolute vs relative amounts, nine behavioural signals with
+  precision/recall/lift, rank correlations, group fraud rates with Wilson intervals, and an optional
+  ground-truth audit. Prior-only window features are checked for leakage and against a brute-force
+  recomputation. New `eda` optional dependency group (duckdb, matplotlib), `layer_files` in the ingestion
+  reader, ADR-010, 14 new tests.
 - Phase 4: data quality. 27 domain row rules enforced during ingestion (quarantined as `RULE:<name>`),
   dataset checks with a PASS/WARN/FAIL report (`python -m mmrisk.validation check`: table loading,
   rejected batches, schema drift, quarantine/duplicate/conflict rates, null rates, key uniqueness,

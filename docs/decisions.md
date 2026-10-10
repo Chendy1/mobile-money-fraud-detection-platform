@@ -11,6 +11,7 @@
 | [007](adr/ADR-007-labels-and-truth-separation.md) | Separate observable data, labels and ground truth | Accepted |
 | [008](adr/ADR-008-layered-ingestion.md) | Layered ingestion with immutable raw, quarantine and a ledger | Accepted |
 | [009](adr/ADR-009-two-tier-data-quality.md) | Two-tier data quality (row rules quarantine, dataset checks report) | Accepted |
+| [010](adr/ADR-010-eda-report-design.md) | EDA as a reproducible report: DuckDB over the lake, observed labels on matured data only | Accepted |
 
 Planned: time-based validation, PR-AUC, shared feature library vs feature store, ECS vs EKS.
 

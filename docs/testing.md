@@ -22,3 +22,10 @@
 - A dedicated test asserts that freshly generated data produces no WARN and no FAIL (no false positives).
 - Mutation-checked: neutering a rule, making the referential or label-timing check never fail, over-strict category rule, and a raised threshold each make specific tests fail.
 - The full suite takes roughly 1.5 minutes on a single core (it builds many small lakes); expect a few minutes on a slower laptop.
+
+## Phase 5 tests
+- `tests/integration/test_eda.py` builds a small dataset, ingests it and checks the analysis layer.
+- **Brute-force cross-check:** `prior_n`, `prior_avg`, `secs_since_prev` and `n_10min` are recomputed with plain Python loops for a sample of customers and must match the DuckDB window results.
+- **Leakage:** dropping each customer's later rows must not change any earlier row's features; a global time cut must not change the "last inbound transfer" feature. Mutation-checked: including the current row in a window, a window that looks forward, and a reversed ASOF join each make a test fail.
+- Signal table bounds, class balance on matured rows only, hidden recent labels, Spearman symmetry, Wilson interval, the report (7 figures, computed numbers, audit present or skipped), an empty lake raising a clear error, and the CLI exit codes.
+- The EDA tests are skipped if `duckdb` or `matplotlib` is missing; install with `pip install -e ".[dev,eda]"` (`dev.ps1 setup` does).
