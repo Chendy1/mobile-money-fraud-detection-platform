@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -9,7 +9,7 @@ switch ($Task) {
     "setup" {
         python -m venv .venv
         & $venvPython -m pip install --upgrade pip
-        & $venvPython -m pip install -e ".[dev]"
+        & $venvPython -m pip install -e ".[dev,eda]"
     }
     "lint"   { & $venvPython -m ruff check .; & $venvPython -m ruff format --check . }
     "format" { & $venvPython -m ruff check --fix .; & $venvPython -m ruff format . }
@@ -17,4 +17,5 @@ switch ($Task) {
     "generate" { & $venvPython -m mmrisk.generation }
     "ingest" { & $venvPython -m mmrisk.ingestion run }
     "quality" { & $venvPython -m mmrisk.validation check }
+    "eda" { & $venvPython -m mmrisk.eda }
 }
