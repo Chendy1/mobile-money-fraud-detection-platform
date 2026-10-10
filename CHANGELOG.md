@@ -4,6 +4,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 6: point-in-time-safe features. `mmrisk.features` computes 28 features (velocity windows,
+  30-day baseline, novelty flags, location jump, inbound-transfer and cash-out features, time and
+  customer attributes) with one Polars implementation that strictly looks backwards in
+  (timestamp, transaction_id) order. `OnlineFeatureState` scores one transaction at a time with the same
+  code. `training_table(as_of)` joins features to the labels known at a chosen time. CLI:
+  `python -m mmrisk.features build | audit | catalog`; generated `docs/feature-catalog.md`; ADR-011;
+  32 new tests, including truncation (leakage) tests, offline/online parity, and a cross-check against
+  the independent DuckDB definitions from Phase 5.
 - Phase 5: exploratory data analysis. `python -m mmrisk.eda` reads the cleaned lake with DuckDB and writes
   seven question-driven figures and `docs/eda-report.md` (all numbers computed): class balance, label delay
   and maturity, time rhythm, hourly pattern, absolute vs relative amounts, nine behavioural signals with
