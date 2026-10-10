@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda
+.PHONY: setup lint format test generate ingest quality eda features
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda]"
 lint:
@@ -16,3 +16,5 @@ quality:
 	python -m mmrisk.validation check
 eda:
 	python -m mmrisk.eda
+features:
+	python -m mmrisk.features build
