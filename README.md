@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 5 complete (exploratory data analysis). Features and models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 6 complete (features). Models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -59,6 +59,15 @@ Seven figures, each answering a stated question, plus a Markdown report in which
 ```
 Read the report: [docs/eda-report.md](docs/eda-report.md). Design: [ADR-010](docs/adr/ADR-010-eda-report-design.md).
 
+## Features
+One feature library, used for training now and for scoring later. Every feature uses only the transaction and strictly earlier history (no labels, no future rows), and the online path runs the same code as the batch path.
+```powershell
+.\scripts\dev.ps1 features                                # data/features/transaction_features.parquet
+.\.venv\Scripts\python -m mmrisk.features audit            # leak-smell check on matured labels
+.\.venv\Scripts\python -m mmrisk.features catalog          # regenerate docs/feature-catalog.md
+```
+28 features (velocity, baseline, novelty, inbound-transfer and time features): [feature catalog](docs/feature-catalog.md). Design and what was left out on purpose: [ADR-011](docs/adr/ADR-011-shared-point-in-time-features.md).
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -66,6 +75,7 @@ Read the report: [docs/eda-report.md](docs/eda-report.md). Design: [ADR-010](doc
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)
 - [EDA report](docs/eda-report.md)
+- [Feature catalog](docs/feature-catalog.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)

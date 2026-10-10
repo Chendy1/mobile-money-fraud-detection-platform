@@ -55,3 +55,15 @@ The audit needs `data/raw/ground_truth/`. Pass `--source <dir>` if the extract i
 
 **Numbers in the report differ slightly from the committed copy**
 The report reflects whatever data is in your lake. Different seeds, dates or library versions change counts; regenerate with the default settings to compare.
+
+**`features` says "lake ... not found" or "no completed data"**
+Run `.\scripts\dev.ps1 generate` then `.\scripts\dev.ps1 ingest` first.
+
+**`python -m mmrisk.features audit` prints WARNING and exits 1**
+A feature separates fraud from non-fraud almost perfectly on its own, which usually means it contains the label. Do not train on it; find which feature it is and how it was computed.
+
+**A test says the feature catalog is out of date**
+You changed `mmrisk/features/registry.py`. Regenerate the document: `.\.venv\Scripts\python -m mmrisk.features catalog`, then commit it.
+
+**`OutOfOrderError` from the online state**
+Transactions must be observed in time order per customer. A replayed or older transaction is rejected on purpose, because accepting it would change features that were already served.

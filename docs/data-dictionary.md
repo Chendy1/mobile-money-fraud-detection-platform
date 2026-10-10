@@ -76,6 +76,9 @@ Run parameters, seed, generator version, library versions, true-fraud counts by 
 
 `fraud_rate` is the share of **true** fraud transactions (default 0.5%); the observed label rate differs because of label noise.
 
+## Features (Phase 6)
+Model inputs are derived from the observable tables only; see the [feature catalog](feature-catalog.md). `data/features/transaction_features.parquet` (git-ignored) holds one row per transaction with the keys `transaction_id`, `customer_id`, `timestamp` and the 28 features, plus `features_manifest.json` (feature set version, row count, input batch ids). Labels are joined separately and by label availability time (`training_table`), never stored in the feature file.
+
 ## Known limitations
 - No account balances, no customers joining during the period, no inbound-only rows.
 - Fraud episodes are injected after the legitimate stream, so fraud timing is independent of customers' activity levels.

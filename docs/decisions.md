@@ -12,6 +12,7 @@
 | [008](adr/ADR-008-layered-ingestion.md) | Layered ingestion with immutable raw, quarantine and a ledger | Accepted |
 | [009](adr/ADR-009-two-tier-data-quality.md) | Two-tier data quality (row rules quarantine, dataset checks report) | Accepted |
 | [010](adr/ADR-010-eda-report-design.md) | EDA as a reproducible report: DuckDB over the lake, observed labels on matured data only | Accepted |
+| [011](adr/ADR-011-shared-point-in-time-features.md) | One shared, strictly backward-looking feature library for training and serving | Accepted |
 
 Planned: time-based validation, PR-AUC, shared feature library vs feature store, ECS vs EKS.
 
