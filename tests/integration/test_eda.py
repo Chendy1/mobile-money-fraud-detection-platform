@@ -103,10 +103,8 @@ def test_features_do_not_see_the_future(env, tmp_path):
         "f_rapid_repeat", "f_burst", "f_location_jump",
     ]  # fmt: skip
     q = "SELECT transaction_id, " + ", ".join(cols) + " FROM a ORDER BY transaction_id"
-    a = full.query(q).filter(
-        pl.col("transaction_id").is_in(
-            trunc.query("SELECT transaction_id FROM a")["transaction_id"].implode()
-        )
+    a = full.query(q).join(
+        trunc.query("SELECT transaction_id FROM a"), on="transaction_id", how="semi"
     )
     b = trunc.query(q)
     assert a.height == b.height > 0
@@ -196,7 +194,7 @@ def test_cross_customer_feature_does_not_see_the_future(env, tmp_path):
     """last inbound transfer: a global time cut must not change rows before the cut."""
     _, lake = env
     t = _txns(env)
-    split = t["timestamp"].quantile(0.6)
+    split = t["timestamp"].sort()[int(t.height * 0.6)]
     full = Analysis.from_lake(lake)
     early = tmp_path / "early.parquet"
     t.filter(pl.col("timestamp") <= split).write_parquet(early)
@@ -204,6 +202,6 @@ def test_cross_customer_feature_does_not_see_the_future(env, tmp_path):
     trunc = Analysis.from_files([early], files["labels"], files["customers"], None, None, {})
     q = "SELECT transaction_id, last_in_ts, f_cashout_after_inbound FROM a ORDER BY 1"
     b = trunc.query(q)
-    a = full.query(q).filter(pl.col("transaction_id").is_in(b["transaction_id"].implode()))
+    a = full.query(q).join(b.select("transaction_id"), on="transaction_id", how="semi")
     assert a.height == b.height > 0
     assert a.equals(b)
