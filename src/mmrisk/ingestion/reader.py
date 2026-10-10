@@ -38,17 +38,22 @@ def visible_batch_ids(root: Path, layer: str, table: str) -> set[str]:
     return {b["batch_id"] for b in complete}
 
 
+def layer_files(root: Path, layer: str, table: str, exclude_batch: str | None = None) -> list[Path]:
+    """Parquet files that make up a layer for a table (COMPLETE batches only), sorted."""
+    base = LakePaths(Path(root)).layer_dir(layer) / table
+    visible = visible_batch_ids(root, layer, table) - {exclude_batch}
+    if not base.exists():
+        return []
+    return [f for f in sorted(base.rglob("*.parquet")) if f.stem in visible]
+
+
 def read_layer(
     root: Path, layer: str, table: str, exclude_batch: str | None = None
 ) -> pl.DataFrame:
     """Read a layer for a table; Hive-style `name=value` directories become columns."""
-    lake = LakePaths(Path(root))
-    base = lake.layer_dir(layer) / table
-    visible = visible_batch_ids(root, layer, table) - {exclude_batch}
+    base = LakePaths(Path(root)).layer_dir(layer) / table
     frames = []
-    for f in sorted(base.rglob("*.parquet")) if base.exists() else []:
-        if f.stem not in visible:
-            continue
+    for f in layer_files(root, layer, table, exclude_batch):
         df = pl.read_parquet(f)
         for part in f.relative_to(base).parts[:-1]:
             name, _, value = part.partition("=")
