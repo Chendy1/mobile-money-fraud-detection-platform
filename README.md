@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 6 complete (features). Models come in later phases. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 7 complete (baseline models). Gradient boosting, thresholds and explainability come in later phases. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -18,7 +18,7 @@ Python 3.12, Polars, DuckDB + Parquet, scikit-learn, LightGBM, SHAP, MLflow, Fas
 ## Local setup (Windows PowerShell)
 Run from the repository root. Requires Python 3.11+ and Git.
 ```powershell
-.\scripts\dev.ps1 setup    # creates .venv and installs the project with dev and EDA tools
+.\scripts\dev.ps1 setup    # creates .venv and installs the project with dev, EDA and ML tools
 .\scripts\dev.ps1 test     # runs pytest
 .\scripts\dev.ps1 lint     # ruff check + format check
 ```
@@ -68,6 +68,14 @@ One feature library, used for training now and for scoring later. Every feature 
 ```
 28 features (velocity, baseline, novelty, inbound-transfer and time features): [feature catalog](docs/feature-catalog.md). Design and what was left out on purpose: [ADR-011](docs/adr/ADR-011-shared-point-in-time-features.md).
 
+## Baseline models
+A leak-safe time split (train, a 45-day label gap, validation, test), then three baselines scored on the same held-out period: hand-written rules, logistic regression and a random forest. The primary metric is PR-AUC (a random scorer scores the fraud rate); every metric has a 95% interval that resamples whole customers; the report also shows what a fixed review budget buys and how much a careless split would have inflated the scores.
+```powershell
+.\scripts\dev.ps1 train                                   # about 3 to 10 minutes; writes docs/model-baselines.md
+.\.venv\Scripts\python -m mmrisk.models train --quick     # smaller grid, faster
+```
+Results and caveats: [docs/model-baselines.md](docs/model-baselines.md). Design: [ADR-012](docs/adr/ADR-012-time-split-and-evaluation.md). Trained models are written to `models/baselines/` (git-ignored). Results are on synthetic data and say nothing about real fraud.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -76,6 +84,7 @@ One feature library, used for training now and for scoring later. Every feature 
 - [Data quality](docs/data-quality.md)
 - [EDA report](docs/eda-report.md)
 - [Feature catalog](docs/feature-catalog.md)
+- [Baseline models](docs/model-baselines.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)

@@ -13,6 +13,7 @@
 | [009](adr/ADR-009-two-tier-data-quality.md) | Two-tier data quality (row rules quarantine, dataset checks report) | Accepted |
 | [010](adr/ADR-010-eda-report-design.md) | EDA as a reproducible report: DuckDB over the lake, observed labels on matured data only | Accepted |
 | [011](adr/ADR-011-shared-point-in-time-features.md) | One shared, strictly backward-looking feature library for training and serving | Accepted |
+| [012](adr/ADR-012-time-split-and-evaluation.md) | Time-based split with a label gap; PR-AUC, review budgets and customer bootstrap | Accepted |
 
 Planned: time-based validation, PR-AUC, shared feature library vs feature store, ECS vs EKS.
 

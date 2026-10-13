@@ -1,7 +1,7 @@
 # Roadmap
 Each phase ends with tests, docs, a CHANGELOG entry, commits, and a stop for approval.
 
-**MVP:** 0 Architecture; 1 Repo, environment, minimal CI; 2 Synthetic generator; 3 Ingestion and layers; 4 Data quality; 5 EDA (done); 6 Features (done); 7 Baseline models; 8 Advanced model and cost thresholds; 9 Explainability and model card; 10 MLflow and training command; 11 FastAPI; 12 Docker Compose.
+**MVP:** 0 Architecture; 1 Repo, environment, minimal CI; 2 Synthetic generator; 3 Ingestion and layers; 4 Data quality; 5 EDA (done); 6 Features (done); 7 Baseline models (done); 8 Advanced model and cost thresholds; 9 Explainability and model card; 10 MLflow and training command; 11 FastAPI; 12 Docker Compose.
 
 **Productionization:** 13 Streaming simulation; 14 Monitoring; 15 Drift; 16 Gated retraining; 17 Dashboard; 18 Security hardening; 19 Load testing; 20 Production-like local deployment.
 
