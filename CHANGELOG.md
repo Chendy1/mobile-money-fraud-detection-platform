@@ -4,6 +4,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 7: baseline models and evaluation. `python -m mmrisk.models train`: time-based split with a 45-day
+  label gap (`make_split`), stateless matrix building with fixed category vocabularies, a constant
+  baseline, an 8-rule baseline, logistic regression and random forest tuned on validation, PR-AUC as the
+  primary metric, precision/recall at fixed review budgets with exact tie handling, customer-level
+  bootstrap intervals and paired differences, a split-shortcut sensitivity check, an optional
+  ground-truth audit, saved models and metadata, a computed report with 3 figures, ADR-012 and
+  38 new tests (mutation-checked).
 - Phase 6: point-in-time-safe features. `mmrisk.features` computes 28 features (velocity windows,
   30-day baseline, novelty flags, location jump, inbound-transfer and cash-out features, time and
   customer attributes) with one Polars implementation that strictly looks backwards in

@@ -67,3 +67,15 @@ You changed `mmrisk/features/registry.py`. Regenerate the document: `.\.venv\Scr
 
 **`OutOfOrderError` from the online state**
 Transactions must be observed in time order per customer. A replayed or older transaction is rejected on purpose, because accepting it would change features that were already served.
+
+**`ModuleNotFoundError: sklearn`**
+Install the ML extra: `.\.venv\Scripts\python -m pip install -e ".[dev,eda,ml]"` (or re-run `.\scripts\dev.ps1 setup`).
+
+**`train` takes a long time or the laptop becomes slow**
+The full run fits 14 settings (the random forest ones dominate) and bootstraps the intervals; roughly 3 minutes on 2 cores in the sandbox, longer on a laptop. Close other programs, or use `--quick` (smaller grid, 100 trees) and `--bootstrap 100`.
+
+**`error: train part is empty` (SplitError)**
+The data is too short for a 45-day gap plus two 45-day evaluation windows plus the last 45 days. Generate a full year (the default).
+
+**A model file will not load**
+The saved models are pickles tied to the `mmrisk` code and the scikit-learn version recorded in `models/baselines/baseline_metadata.json`. Retrain with `.\scripts\dev.ps1 train` instead of copying models between machines.
