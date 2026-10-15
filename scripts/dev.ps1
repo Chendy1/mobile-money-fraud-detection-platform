@@ -20,4 +20,5 @@ switch ($Task) {
     "eda" { & $venvPython -m mmrisk.eda }
     "features" { & $venvPython -m mmrisk.features build }
     "train" { & $venvPython -m mmrisk.models train }
+    "advanced" { & $venvPython -m mmrisk.models advanced }
 }

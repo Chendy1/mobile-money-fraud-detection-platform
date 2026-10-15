@@ -14,8 +14,9 @@
 | [010](adr/ADR-010-eda-report-design.md) | EDA as a reproducible report: DuckDB over the lake, observed labels on matured data only | Accepted |
 | [011](adr/ADR-011-shared-point-in-time-features.md) | One shared, strictly backward-looking feature library for training and serving | Accepted |
 | [012](adr/ADR-012-time-split-and-evaluation.md) | Time-based split with a label gap; PR-AUC, review budgets and customer bootstrap | Accepted |
+| [013](adr/ADR-013-calibration-and-cost-based-decisions.md) | LightGBM chosen on validation, Platt calibration, decisions from an expected-cost rule | Accepted |
 
-Planned: time-based validation, PR-AUC, shared feature library vs feature store, ECS vs EKS.
+Planned: explainability approach, MLflow tracking, ECS vs EKS.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.
