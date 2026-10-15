@@ -4,6 +4,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 8: advanced model, calibration and cost-based decisions. `python -m mmrisk.models advanced`: LightGBM
+  tuned on validation (staged rounds, no early stopping), Platt calibration fitted on validation only for
+  every scorer, a three-action expected-cost rule (ALLOW/REVIEW/BLOCK mapped to LOW/MEDIUM/HIGH) from a
+  frozen `CostModel` whose values are assumptions, realized-cost bootstrap, sensitivity tables, a
+  comparison with a fixed 0.5 cut-off, an oracle floor, a `RiskModel` bundle (`assess`, `save`, `load`), an
+  optional ground-truth audit, `docs/model-advanced.md` with 4 figures, `docs/cost-model.md`, ADR-013, and
+  48 new tests (the whole suite has 289). The `ml` extra now includes `lightgbm`. Finding: LightGBM did not
+  beat the random forest on ranking (differences not separable); the cost rule beat a fixed 0.5 cut-off.
 - Phase 7: baseline models and evaluation. `python -m mmrisk.models train`: time-based split with a 45-day
   label gap (`make_split`), stateless matrix building with fixed category vocabularies, a constant
   baseline, an 8-rule baseline, logistic regression and random forest tuned on validation, PR-AUC as the

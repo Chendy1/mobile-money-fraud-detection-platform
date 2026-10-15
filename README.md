@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 7 complete (baseline models). Gradient boosting, thresholds and explainability come in later phases. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 8 complete (LightGBM, calibration and cost-based decisions). Explainability and a model card come next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -76,6 +76,15 @@ A leak-safe time split (train, a 45-day label gap, validation, test), then three
 ```
 Results and caveats: [docs/model-baselines.md](docs/model-baselines.md). Design: [ADR-012](docs/adr/ADR-012-time-split-and-evaluation.md). Trained models are written to `models/baselines/` (git-ignored). Results are on synthetic data and say nothing about real fraud.
 
+## Advanced model and cost-based decisions
+LightGBM is tuned on the validation window and compared with the baselines. Every scorer is calibrated (Platt scaling, fitted on validation only), then an expected-cost rule picks ALLOW, REVIEW or BLOCK (risk level LOW, MEDIUM, HIGH) from the probability and the amount. The costs are **assumptions**, reported with sensitivity tables, intervals and a comparison with a fixed 0.5 cut-off.
+```powershell
+.\scripts\dev.ps1 train          # Phase 7 baselines first (the advanced step reuses them)
+.\scripts\dev.ps1 advanced       # writes docs/model-advanced.md and four figures
+.\.venv\Scripts\python -m mmrisk.models advanced --quick --bootstrap 100   # faster
+```
+Results and caveats: [docs/model-advanced.md](docs/model-advanced.md). Assumptions: [docs/cost-model.md](docs/cost-model.md). Design: [ADR-013](docs/adr/ADR-013-calibration-and-cost-based-decisions.md). The decision bundle is written to `models/advanced/` (git-ignored). Synthetic data only; the savings say nothing about real money.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -85,6 +94,8 @@ Results and caveats: [docs/model-baselines.md](docs/model-baselines.md). Design:
 - [EDA report](docs/eda-report.md)
 - [Feature catalog](docs/feature-catalog.md)
 - [Baseline models](docs/model-baselines.md)
+- [Advanced model and decisions](docs/model-advanced.md)
+- [Cost model (assumed)](docs/cost-model.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)

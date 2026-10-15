@@ -20,3 +20,5 @@ features:
 	python -m mmrisk.features build
 train:
 	python -m mmrisk.models train
+advanced:
+	python -m mmrisk.models advanced
