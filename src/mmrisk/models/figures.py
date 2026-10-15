@@ -19,6 +19,7 @@ STYLE = {  # fixed colour and marker per model, in a fixed order
     "rules": ("#E69F00", "-", "s", "Hand-written rules"),
     "logistic_regression": ("#0072B2", "-", "o", "Logistic regression"),
     "random_forest": ("#009E73", "-", "^", "Random forest"),
+    "lightgbm": ("#CC79A7", "-", "D", "LightGBM"),  # used from Phase 8 on
 }
 plt.rcParams.update(
     {
@@ -79,6 +80,8 @@ def pr_curves(y, scores: dict, aps: dict, prevalence: float, path: Path) -> Path
     """How precise is each model at each level of recall (test period)?"""
     fig, ax = plt.subplots(figsize=(7, 5.6))
     for name, (colour, ls, marker, label) in STYLE.items():
+        if name != "no_skill" and name not in scores:
+            continue  # a model that was not run (LightGBM before Phase 8)
         if name == "no_skill":
             ax.axhline(prevalence, color=colour, ls=ls, lw=1.5, label=f"{label} ({prevalence:.2%})")
             continue
