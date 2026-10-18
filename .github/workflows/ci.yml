@@ -17,7 +17,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install
-        run: pip install -e ".[dev,eda,ml]"
+        run: pip install -e ".[dev,eda,ml,explain]"
       - name: Lint
         run: |
           ruff check .
