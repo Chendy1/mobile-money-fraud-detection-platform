@@ -52,6 +52,19 @@ class RiskModel:
             }
         )
 
+    def explain(self, df: pl.DataFrame, top_k: int = 3) -> pl.DataFrame:
+        """Reason codes: the features that raised each transaction's risk the most.
+
+        Needs a scorer with exact contributions (the LightGBM model) and a logit calibration, so
+        that effects add up on the calibrated log-odds scale. They describe the model, not a cause.
+        """
+        from mmrisk.models.explain import ExplainError, contribution_frame, reason_codes
+
+        if not hasattr(self.scorer, "contributions") or self.calibrator.link != "logit":
+            raise ExplainError("explanations need the LightGBM scorer and a logit calibration")
+        phi, _ = contribution_frame(self.scorer, df)
+        return reason_codes(df, phi, a=self.calibrator.a, top_k=top_k)
+
     def save(self, directory: Path, extra: dict | None = None) -> Path:
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)

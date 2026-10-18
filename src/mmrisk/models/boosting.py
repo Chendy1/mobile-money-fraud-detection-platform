@@ -52,6 +52,17 @@ class LGBMModel:
         """Raw model probability (not calibrated)."""
         return self._booster.predict(to_matrix(df, "tree"), num_iteration=self.n_rounds)
 
+    def contributions(self, df: pl.DataFrame) -> tuple[np.ndarray, float]:
+        """Exact TreeSHAP values in log-odds, one column per matrix column, and the base value.
+
+        Each row satisfies: base + sum(values) = log-odds of `score`. LightGBM computes these
+        itself (`pred_contrib`), so no extra library is needed.
+        """
+        raw = self._booster.predict(
+            to_matrix(df, "tree"), num_iteration=self.n_rounds, pred_contrib=True
+        )
+        return raw[:, :-1], float(raw[0, -1])
+
     def gain_importance(self) -> dict[str, float]:
         from mmrisk.models.preprocess import column_names
 

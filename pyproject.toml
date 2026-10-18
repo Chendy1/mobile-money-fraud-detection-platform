@@ -22,6 +22,8 @@ dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.6"]
 eda = ["duckdb>=1.0", "matplotlib>=3.8"]
 # baseline models and evaluation (Phase 7)
 ml = ["scikit-learn>=1.4", "lightgbm>=4.0", "matplotlib>=3.8"]
+# cross-check of the exact tree explanations against the SHAP library (Phase 9, tests only)
+explain = ["shap>=0.45"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -42,3 +44,5 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.ruff.lint.per-file-ignores]
 # The report builders are mostly long prose strings; formatting still applies.
 "src/mmrisk/models/advanced_report.py" = ["E501"]
+"src/mmrisk/models/explain_report.py" = ["E501"]
+"src/mmrisk/models/model_card.py" = ["E501"]
