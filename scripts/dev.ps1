@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
 # Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train")][string]$Task)
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
