@@ -4,6 +4,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 9: explanations and a model card. `python -m mmrisk.models explain` and `card`: exact TreeSHAP contributions
+  from LightGBM (`LGBMModel.contributions`, summed to the 28 catalogue features), three views of importance
+  (effect on all rows, effect on fraud-labelled rows, ranking lost when shuffled, singly and by group), stability
+  across validation and test windows, refits without a feature on the validation window with several seeds,
+  reason codes (`RiskModel.explain`), dependence plots, three worked examples chosen by fixed rules, an optional
+  ground-truth audit of fraud patterns, a descriptive table of who gets flagged, `docs/model-explanations.md` with
+  3 figures, a model card generated from the saved results (`docs/model-card.md`), ADR-014, an optional `explain`
+  extra (`shap`, used only to cross-check the explanations in a test), and 42 new tests (the suite has 331).
+  Finding: the three importance measures disagree, `segment` has a large average effect and removing it lowers
+  validation PR-AUC, so reason codes that cite it need review before being shown to anyone.
 - Phase 8: advanced model, calibration and cost-based decisions. `python -m mmrisk.models advanced`: LightGBM
   tuned on validation (staged rounds, no early stopping), Platt calibration fitted on validation only for
   every scorer, a three-action expected-cost rule (ALLOW/REVIEW/BLOCK mapped to LOW/MEDIUM/HIGH) from a

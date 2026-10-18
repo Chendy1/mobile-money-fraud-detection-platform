@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 8 complete (LightGBM, calibration and cost-based decisions). Explainability and a model card come next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 9 complete (explanations and a model card). MLflow tracking and a single training command come next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -85,6 +85,15 @@ LightGBM is tuned on the validation window and compared with the baselines. Ever
 ```
 Results and caveats: [docs/model-advanced.md](docs/model-advanced.md). Assumptions: [docs/cost-model.md](docs/cost-model.md). Design: [ADR-013](docs/adr/ADR-013-calibration-and-cost-based-decisions.md). The decision bundle is written to `models/advanced/` (git-ignored). Synthetic data only; the savings say nothing about real money.
 
+## Explanations and model card
+Exact tree explanations (TreeSHAP) for the LightGBM model, cross-checked by shuffling features, by refitting without them, and by comparing two time windows. Reason codes for flagged transactions, a table of who gets flagged, and a model card whose numbers are read from the saved results. The report states where the measures disagree.
+```powershell
+.\scripts\dev.ps1 explain        # needs `advanced` first; about 2 to 6 minutes; writes docs/model-explanations.md
+.\scripts\dev.ps1 card           # writes docs/model-card.md from the saved results
+.\.venv\Scripts\python -m mmrisk.models explain --quick   # faster, fewer shuffles and one seed
+```
+Results: [docs/model-explanations.md](docs/model-explanations.md). Model card: [docs/model-card.md](docs/model-card.md). Design: [ADR-014](docs/adr/ADR-014-explanations-and-model-card.md). In code, `RiskModel.explain(df)` returns reason codes. Explanations describe the model, not causes; synthetic data only.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -96,6 +105,8 @@ Results and caveats: [docs/model-advanced.md](docs/model-advanced.md). Assumptio
 - [Baseline models](docs/model-baselines.md)
 - [Advanced model and decisions](docs/model-advanced.md)
 - [Cost model (assumed)](docs/cost-model.md)
+- [Model explanations](docs/model-explanations.md)
+- [Model card](docs/model-card.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)
