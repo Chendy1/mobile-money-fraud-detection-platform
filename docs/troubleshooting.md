@@ -80,6 +80,15 @@ The data is too short for a 45-day gap plus two 45-day evaluation windows plus t
 **A model file will not load**
 The saved models are pickles tied to the `mmrisk` code and the scikit-learn version recorded in `models/baselines/baseline_metadata.json`. Retrain with `.\scripts\dev.ps1 train` instead of copying models between machines.
 
+**`explain` says "no risk model" or "different split"**
+`explain` explains the model saved by `advanced`. Run `.\scripts\dev.ps1 advanced` first, on the same lake. If you regenerated data or changed the split, rerun `advanced`: the saved model records the split and feature version and a mismatch is refused on purpose.
+
+**`card` says a file is missing**
+The card is built from `risk_model.json`, `advanced_metrics.json` and `explain_metrics.json` in `models/advanced`. Run `advanced`, then `explain`, then `card`.
+
+**One test is skipped ("shap")**
+The cross-check against the SHAP library needs the optional extra: `.\.venv\Scripts\python -m pip install -e ".[dev,eda,ml,explain]"`.
+
 **`advanced` says the baselines are missing or do not match**
 The advanced step reuses the Phase 7 models. Run `.\scripts\dev.ps1 train` first, on the same lake. If you regenerated data, retrain: the baselines record the split and feature version and a mismatch is refused on purpose.
 

@@ -15,8 +15,9 @@
 | [011](adr/ADR-011-shared-point-in-time-features.md) | One shared, strictly backward-looking feature library for training and serving | Accepted |
 | [012](adr/ADR-012-time-split-and-evaluation.md) | Time-based split with a label gap; PR-AUC, review budgets and customer bootstrap | Accepted |
 | [013](adr/ADR-013-calibration-and-cost-based-decisions.md) | LightGBM chosen on validation, Platt calibration, decisions from an expected-cost rule | Accepted |
+| [014](adr/ADR-014-explanations-and-model-card.md) | Exact tree explanations cross-checked three ways; a model card generated from saved results | Accepted |
 
-Planned: explainability approach, MLflow tracking, ECS vs EKS.
+Planned: MLflow tracking, ECS vs EKS.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.
