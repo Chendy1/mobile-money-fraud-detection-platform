@@ -98,5 +98,20 @@ Re-install the ML extra: `.\.venv\Scripts\python -m pip install -e ".[dev,eda,ml
 **`advanced` takes a long time**
 The full grid is 18 LightGBM settings with 6 stopping points each plus bootstraps; use `--quick --bootstrap 100` to check the setup first.
 
+**`error: MLflow is not installed`**
+Install the tracking extra: `.\.venv\Scripts\python -m pip install -e ".[dev,eda,ml,explain,tracking]"`, or run with `--no-tracking`.
+
+**`error: only local tracking is supported`**
+Remote tracking addresses (http, https, databricks, databases) are refused on purpose, see ADR-015. Use the default `sqlite:///mlflow.db` or a folder.
+
+**Where is `mlflow.db`?**
+In the folder you ran the command from. `mlflow ui` must be started from the same folder or given `--backend-store-uri sqlite:///mlflow.db`.
+
+**The pipeline is slow**
+A full run does the whole grid, bootstraps and refits. Check the setup first with `--quick --bootstrap 50`, which writes to `models\quick` and `docs\quick`.
+
+**A run shows FAILED**
+Open it with `compare` or the MLflow UI: the tag `failed_stage` names the step. Fix the cause and run again; the failed run stays as a record.
+
 **`error: invalid cost` (exit code 2)**
 A cost cannot be negative and the review effectiveness must be between 0 and 1. See `docs/cost-model.md`.

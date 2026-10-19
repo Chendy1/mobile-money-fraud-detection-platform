@@ -4,6 +4,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 ## [Unreleased]
 
 ### Added
+- Phase 10: `python -m mmrisk.pipeline run` runs features, baselines, the advanced model, explanations and the model card in one process and records the run in a local MLflow store (data fingerprint from the ingestion ledger, git commit, library versions, about 100 metrics, reports, figures, model bundle, manifest). `compare` lists recent runs. Tracking is behind a `Tracker` interface (MLflow or in-memory), local only (remote addresses refused), records no user, host or path, marks failed and interrupted runs, and sends `--quick` runs to `models/quick` and `docs/quick`. Optional extra `tracking`; `dev.ps1 pipeline` and `compare`; ADR-015; 40 new tests.
 - Phase 9: explanations and a model card. `python -m mmrisk.models explain` and `card`: exact TreeSHAP contributions
   from LightGBM (`LGBMModel.contributions`, summed to the 28 catalogue features), three views of importance
   (effect on all rows, effect on fraud-labelled rows, ranking lost when shuffled, singly and by group), stability

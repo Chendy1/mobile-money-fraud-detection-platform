@@ -17,7 +17,9 @@
 | [013](adr/ADR-013-calibration-and-cost-based-decisions.md) | LightGBM chosen on validation, Platt calibration, decisions from an expected-cost rule | Accepted |
 | [014](adr/ADR-014-explanations-and-model-card.md) | Exact tree explanations cross-checked three ways; a model card generated from saved results | Accepted |
 
-Planned: MLflow tracking, ECS vs EKS.
+| [015](adr/ADR-015-experiment-tracking-and-pipeline.md) | Local-only experiment tracking behind an interface; one in-process training command | Accepted |
+
+Planned: ECS vs EKS.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.
