@@ -19,6 +19,8 @@
 
 | [015](adr/ADR-015-experiment-tracking-and-pipeline.md) | Local-only experiment tracking behind an interface; one in-process training command | Accepted |
 
+| [016](adr/ADR-016-local-scoring-api.md) | Local scoring API: framework-free core, strict input, in-memory history, loopback only | Accepted |
+
 Planned: ECS vs EKS.
 
 ## Rejected technologies

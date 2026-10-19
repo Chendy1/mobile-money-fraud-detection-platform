@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 10 complete (MLflow tracking and a single training command). The API (FastAPI) comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 11 complete (local scoring API). Docker Compose comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -103,6 +103,19 @@ Results: [docs/model-explanations.md](docs/model-explanations.md). Model card: [
 .\.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db       # browse at http://127.0.0.1:5000
 ```
 Use `--no-tracking` to skip MLflow. The full run overwrites the committed reports in `docs/`; quick runs do not. Design: [ADR-015](docs/adr/ADR-015-experiment-tracking-and-pipeline.md). The model registry comes in Phase 16.
+
+## Scoring API (local)
+A FastAPI service around the saved model and the same online feature code the batch path uses. It listens on 127.0.0.1 only and has no authentication; it is for this machine and synthetic data.
+```powershell
+.\scripts\dev.ps1 apicheck       # streams the last 300 transactions through the service and compares with batch scoring
+.\scripts\dev.ps1 serve          # needs `advanced` (or `pipeline`) first; replays history, then listens on http://127.0.0.1:8000
+```
+Then open http://127.0.0.1:8000/docs to try `POST /v1/score`, or call it from PowerShell:
+```powershell
+$body = @{ transaction_id="TXN9000001"; customer_id="C000001"; timestamp="2026-01-05T09:30:00"; transaction_type="SEND_MONEY"; amount_kes=2500; counterparty_type="CUSTOMER"; counterparty_id="C000002"; device_id="D000001"; location_county="Nairobi"; channel="APP" } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/v1/score -ContentType "application/json" -Body $body
+```
+The customer must exist in your data and the timestamp must be later than that customer's replayed history (use `--history-until` to replay only part of it). Design and limits: [ADR-016](docs/adr/ADR-016-local-scoring-api.md); threats: [threat model](docs/threat-model.md).
 
 ## Documentation
 - [Architecture](docs/architecture.md)
