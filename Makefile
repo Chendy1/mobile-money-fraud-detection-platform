@@ -1,7 +1,7 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare
 setup:
-	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain]"
+	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking]"
 lint:
 	ruff check . && ruff format --check .
 format:
@@ -26,3 +26,7 @@ explain:
 	python -m mmrisk.models explain
 card:
 	python -m mmrisk.models card
+pipeline:
+	python -m mmrisk.pipeline run
+compare:
+	python -m mmrisk.pipeline compare
