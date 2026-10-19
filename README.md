@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 9 complete (explanations and a model card). MLflow tracking and a single training command come next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 10 complete (MLflow tracking and a single training command). The API (FastAPI) comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -93,6 +93,16 @@ Exact tree explanations (TreeSHAP) for the LightGBM model, cross-checked by shuf
 .\.venv\Scripts\python -m mmrisk.models explain --quick   # faster, fewer shuffles and one seed
 ```
 Results: [docs/model-explanations.md](docs/model-explanations.md). Model card: [docs/model-card.md](docs/model-card.md). Design: [ADR-014](docs/adr/ADR-014-explanations-and-model-card.md). In code, `RiskModel.explain(df)` returns reason codes. Explanations describe the model, not causes; synthetic data only.
+
+## One training command and experiment tracking
+`python -m mmrisk.pipeline run` runs features, baselines, the advanced model, explanations and the model card in one process and records the run (data fingerprint, git commit, library versions, about 100 metrics, reports and the model bundle) in a local MLflow store. Nothing leaves the machine; a remote tracking address is refused.
+```powershell
+.\scripts\dev.ps1 pipeline        # full run; rewrites models/ and docs/ (about 10 to 20 minutes on a laptop)
+.\.venv\Scripts\python -m mmrisk.pipeline run --quick --bootstrap 50   # about a minute; writes to models\quick and docs\quick
+.\scripts\dev.ps1 compare         # last runs: status, test PR-AUC, assumed cost, seconds, commit
+.\.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db       # browse at http://127.0.0.1:5000
+```
+Use `--no-tracking` to skip MLflow. The full run overwrites the committed reports in `docs/`; quick runs do not. Design: [ADR-015](docs/adr/ADR-015-experiment-tracking-and-pipeline.md). The model registry comes in Phase 16.
 
 ## Documentation
 - [Architecture](docs/architecture.md)
