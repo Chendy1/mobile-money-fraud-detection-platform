@@ -24,6 +24,8 @@ eda = ["duckdb>=1.0", "matplotlib>=3.8"]
 ml = ["scikit-learn>=1.4", "lightgbm>=4.0", "matplotlib>=3.8"]
 # cross-check of the exact tree explanations against the SHAP library (Phase 9, tests only)
 explain = ["shap>=0.45"]
+# experiment tracking in a local store (Phase 10); the pipeline also runs without it
+tracking = ["mlflow>=2.14"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

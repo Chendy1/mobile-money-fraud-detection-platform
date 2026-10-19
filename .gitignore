@@ -45,3 +45,6 @@ mlartifacts/
 Thumbs.db
 .idea/
 .vscode/
+mlflow.db
+mlartifacts/
+docs/quick/
