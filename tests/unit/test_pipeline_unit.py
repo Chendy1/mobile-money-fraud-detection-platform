@@ -2,6 +2,8 @@
 
 import json
 import math
+import shutil
+import subprocess
 
 import pytest
 
@@ -108,8 +110,30 @@ def test_an_empty_lake_has_a_fingerprint_and_no_batches(tmp_path):
     assert fp["batches"] == 0 and len(fp["sha256"]) == 64
 
 
-def test_code_version_outside_a_repository_is_unknown(tmp_path):
+def test_code_version_is_unknown_when_git_cannot_answer(tmp_path, monkeypatch):
+    """Not 'a folder outside any repository': a temp folder can itself sit inside one (a git-tracked
+    home folder, say), so the failure is simulated instead of assumed."""
+
+    def no_git(*args, **kwargs):
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr("mmrisk.pipeline.lineage.subprocess.run", no_git)
     assert code_version(tmp_path) == {"git_commit": "unknown", "git_dirty": "unknown"}
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="git is not installed")
+def test_code_version_reads_the_commit_and_whether_the_tree_is_dirty(tmp_path):
+    repo = tmp_path / "repo"
+    (repo / "sub").mkdir(parents=True)
+    ident = ["-c", "user.email=t@example.com", "-c", "user.name=t"]
+    for args in (["init", "-q"], [*ident, "commit", "-q", "--allow-empty", "-m", "x"]):
+        subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True)
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True,
+                          capture_output=True, text=True).stdout.strip()  # fmt: skip
+    assert code_version(repo) == {"git_commit": head, "git_dirty": "false"}
+    (repo / "new.txt").write_text("x")
+    assert code_version(repo)["git_dirty"] == "true"
+    assert code_version(repo / "sub")["git_commit"] == head  # a subfolder reports its repository
 
 
 def test_environment_names_libraries_not_people_or_machines():
