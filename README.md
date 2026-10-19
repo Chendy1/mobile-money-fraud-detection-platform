@@ -97,8 +97,8 @@ Results: [docs/model-explanations.md](docs/model-explanations.md). Model card: [
 ## One training command and experiment tracking
 `python -m mmrisk.pipeline run` runs features, baselines, the advanced model, explanations and the model card in one process and records the run (data fingerprint, git commit, library versions, about 100 metrics, reports and the model bundle) in a local MLflow store. Nothing leaves the machine; a remote tracking address is refused.
 ```powershell
-.\scripts\dev.ps1 pipeline        # full run; rewrites models/ and docs/ (about 10 to 20 minutes on a laptop)
-.\.venv\Scripts\python -m mmrisk.pipeline run --quick --bootstrap 50   # about a minute; writes to models\quick and docs\quick
+.\scripts\dev.ps1 pipeline        # full run; rewrites models/ and docs/ (not yet timed on a laptop; the quick run below took about 8 minutes on the author's 2-core laptop, so expect the full run to be longer)
+.\.venv\Scripts\python -m mmrisk.pipeline run --quick --bootstrap 50   # about 1 minute in the sandbox, about 8 minutes on the author's laptop; writes to models\quick and docs\quick
 .\scripts\dev.ps1 compare         # last runs: status, test PR-AUC, assumed cost, seconds, commit
 .\.venv\Scripts\mlflow ui --backend-store-uri sqlite:///mlflow.db       # browse at http://127.0.0.1:5000
 ```
