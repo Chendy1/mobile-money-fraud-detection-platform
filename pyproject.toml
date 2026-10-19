@@ -26,6 +26,8 @@ ml = ["scikit-learn>=1.4", "lightgbm>=4.0", "matplotlib>=3.8"]
 explain = ["shap>=0.45"]
 # experiment tracking in a local store (Phase 10); the pipeline also runs without it
 tracking = ["mlflow>=2.14"]
+# local scoring API (Phase 11); httpx is for the test client
+api = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

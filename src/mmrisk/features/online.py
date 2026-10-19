@@ -61,6 +61,14 @@ class OnlineFeatureState:
 
     def features(self, txn: dict) -> dict:
         """Features for `txn`, from what has been observed so far. Does not record `txn`."""
+        row = self.feature_frame(txn).row(0, named=True)
+        return {name: row[name] for name in feature_names()}
+
+    def feature_frame(self, txn: dict) -> pl.DataFrame:
+        """The same features as a one-row frame with the batch path's column types.
+
+        The key columns come first, so the frame can go straight to a model.
+        """
         cid = txn["customer_id"]
         if cid not in self._customers:
             raise KeyError(f"unknown customer {cid}")
@@ -74,8 +82,7 @@ class OnlineFeatureState:
         )
         customer = pl.DataFrame([self._customers[cid]])
         result = compute_features(frame, customer, inbound)
-        row = result.filter(pl.col("transaction_id") == txn["transaction_id"]).row(0, named=True)
-        return {name: row[name] for name in feature_names()}
+        return result.filter(pl.col("transaction_id") == txn["transaction_id"])
 
     def observe(self, txn: dict) -> None:
         """Record a transaction so later ones can see it (call after scoring it)."""
