@@ -1,7 +1,7 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve
 setup:
-	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking]"
+	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
 lint:
 	ruff check . && ruff format --check .
 format:
@@ -30,3 +30,7 @@ pipeline:
 	python -m mmrisk.pipeline run
 compare:
 	python -m mmrisk.pipeline compare
+apicheck:
+	python -m mmrisk.api check
+serve:
+	python -m mmrisk.api serve
