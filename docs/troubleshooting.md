@@ -113,5 +113,26 @@ A full run does the whole grid, bootstraps and refits. Check the setup first wit
 **A run shows FAILED**
 Open it with `compare` or the MLflow UI: the tag `failed_stage` names the step. Fix the cause and run again; the failed run stays as a record.
 
+**`error: the API needs its extra`**
+Install it: `.\.venv\Scripts\python -m pip install -e ".[dev,eda,ml,explain,tracking,api]"`.
+
+**`error: no model at models\advanced\risk_model.joblib`**
+Run `.\scripts\dev.ps1 advanced` (after `train`) or `.\scripts\dev.ps1 pipeline` first. A `--quick` pipeline run saves its model in `models\quick\advanced`; pass `--model-dir models\quick\advanced`.
+
+**`error: model was built for feature version ...`**
+The saved model and the code disagree on the feature set. Retrain.
+
+**API returns 409 `out_of_order`**
+The transaction is not later than the customer's last one in the replayed history (or already scored). Use a later timestamp, or start the server with `--history-until` set before the time you want to score.
+
+**API returns 404 `unknown_customer`**
+Use an id from `data\processed` cleaned customers (for example `C000001`).
+
+**`error: refusing to listen on ...`**
+The API has no authentication, so only 127.0.0.1 is allowed by default. `--allow-external` overrides that; do not use it on a shared network.
+
+**A `StarletteDeprecationWarning` about httpx during tests**
+Harmless: newer Starlette prefers `httpx2` for its test client. The tests work with either.
+
 **`error: invalid cost` (exit code 2)**
 A cost cannot be negative and the review effectiveness must be between 0 and 1. See `docs/cost-model.md`.

@@ -19,7 +19,7 @@ flowchart TB
   C --> F[Shared feature library]
   F --> T[Training + MLflow]
   T --> M[(Model registry)]
-  M --> A[FastAPI /predict]
+  M --> A[FastAPI /v1/score]
   S[Event simulator + in-process queue] --> A
   A --> P[(Prediction store)]
   P --> D[Streamlit dashboard]
@@ -34,7 +34,7 @@ flowchart TB
 4. Duplicates are resolved first-write-wins; identical copies are dropped and counted, conflicting copies are quarantined. The **cleaned** layer is standardised and partitioned by event date, with lineage columns on every row (`_batch_id`, `_source_file`, `_row_number`, `_ingested_at`).
 5. After ingestion, dataset checks (completeness, duplicates, referential integrity, label timing, volume, drift, freshness, consistency) produce a PASS/WARN/FAIL report (`python -m mmrisk.validation check`).
 6. Shared feature library computes behavioral features using only past data (point-in-time correct).
-7. Model scores each transaction; the API returns score, level, model version, timestamp and SHAP explanation.
+7. The model scores each transaction; the API (`POST /v1/score`) returns the calibrated probability, the cost-based action, the risk level, the feature version and reason codes for flagged transactions (exact tree contributions). It records each scored transaction as history for the customer's later ones.
 8. Predictions are stored for the dashboard and drift monitoring.
 
 ## ML lifecycle
