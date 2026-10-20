@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 from datetime import datetime
@@ -99,7 +100,22 @@ def _cmd_check(args) -> int:
     return 0 if ok else 1
 
 
-def main(argv=None) -> int:
+def _cmd_smoke(args) -> int:
+    from mmrisk.api.smoke import SmokeError, run_smoke
+
+    try:
+        results = run_smoke(args.url, args.timeout)
+    except SmokeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    for name, ok, detail in results:
+        print(f"  {'PASS' if ok else 'FAIL'}  {name} ({detail})")
+    passed = all(ok for _, ok, _ in results)
+    print("smoke: " + ("PASS" if passed else "FAIL"))
+    return 0 if passed else 1
+
+
+def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="python -m mmrisk.api", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
     for name in ("serve", "check"):
@@ -116,8 +132,9 @@ def main(argv=None) -> int:
             )
             s.add_argument(
                 "--history-until",
-                default=None,
-                help="replay only transactions before this ISO time (default: all)",
+                default=os.environ.get("MMRISK_HISTORY_UNTIL") or None,
+                help="replay only transactions before this ISO time (default: all; "
+                "or the MMRISK_HISTORY_UNTIL environment variable)",
             )
             s.add_argument(
                 "--no-history", action="store_true", help="start with no past transactions"
@@ -130,8 +147,15 @@ def main(argv=None) -> int:
             s.add_argument(
                 "--n", type=int, default=300, help="how many final transactions to hold out"
             )
-    args = p.parse_args(argv)
-    return {"serve": _cmd_serve, "check": _cmd_check}[args.cmd](args)
+    m = sub.add_parser("smoke", help="non-mutating checks of a running API")
+    m.add_argument("--url", default="http://127.0.0.1:8000")
+    m.add_argument("--timeout", type=float, default=5.0)
+    return p
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
+    return {"serve": _cmd_serve, "check": _cmd_check, "smoke": _cmd_smoke}[args.cmd](args)
 
 
 if __name__ == "__main__":
