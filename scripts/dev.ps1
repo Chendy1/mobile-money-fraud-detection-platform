@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -27,4 +27,9 @@ switch ($Task) {
     "compare" { & $venvPython -m mmrisk.pipeline compare }
     "apicheck" { & $venvPython -m mmrisk.api check }
     "serve" { & $venvPython -m mmrisk.api serve }
+    "up" { docker compose up --build }
+    "down" { docker compose down }
+    "smoke" { & $venvPython -m mmrisk.api smoke }
+    "simulate" { & $venvPython -m mmrisk.streaming run --jitter-seconds 20 --duplicate-rate 0.01 --bad-rate 0.005 }
+    "predictions" { & $venvPython -m mmrisk.streaming summary }
 }
