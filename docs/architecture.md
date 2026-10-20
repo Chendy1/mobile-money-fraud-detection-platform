@@ -20,7 +20,7 @@ flowchart TB
   F --> T[Training + MLflow]
   T --> M[(Model registry)]
   M --> A[FastAPI /v1/score]
-  S[Event simulator + in-process queue] --> A
+  S[Event simulator + bounded queue + reorder buffer] --> A
   A --> P[(Prediction store)]
   P --> D[Streamlit dashboard]
   A --> PR[Prometheus] --> GR[Grafana]

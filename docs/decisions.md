@@ -21,6 +21,10 @@
 
 | [016](adr/ADR-016-local-scoring-api.md) | Local scoring API: framework-free core, strict input, in-memory history, loopback only | Accepted |
 
+| [017](adr/ADR-017-container-packaging.md) | One hardened API container on loopback, model and data mounted read-only | Accepted |
+
+| [018](adr/ADR-018-streaming-simulation.md) | Streaming simulation: bounded queue, reorder buffer, append-only prediction store | Accepted |
+
 Planned: ECS vs EKS.
 
 ## Rejected technologies

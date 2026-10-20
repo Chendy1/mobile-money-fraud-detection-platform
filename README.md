@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 11 complete (local scoring API). Docker Compose comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 13 complete (streaming simulation). Monitoring comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -117,6 +117,32 @@ Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/v1/score -ContentType 
 ```
 The customer must exist in your data and the timestamp must be later than that customer's replayed history (use `--history-until` to replay only part of it). Design and limits: [ADR-016](docs/adr/ADR-016-local-scoring-api.md); threats: [threat model](docs/threat-model.md).
 
+## Run the API in Docker
+The same API in a locked-down container: read-only filesystem, no capabilities, a memory limit, a non-root user, published on 127.0.0.1 only. The image holds the code and its serving dependencies; your trained model and data lake are mounted read-only from the repo folder.
+```powershell
+.\scripts\dev.ps1 advanced     # once: creates models\advanced (or run `pipeline`); the lake must exist in data\processed
+.\scripts\dev.ps1 up           # builds the image and starts it; the first build downloads the base image
+# in a second window, once `docker compose ps` says "healthy" (the history is replayed first, allow a minute or two):
+.\scripts\dev.ps1 smoke        # checks that cannot change the service's state
+.\scripts\dev.ps1 down
+```
+Docs are at http://127.0.0.1:8000/docs. Before a first run on an 8 GB machine, cap WSL2's memory (see [troubleshooting](docs/troubleshooting.md)) and stop containers you do not need. The container build and run were not executed by the assistant (its sandbox cannot reach Docker Hub); the first run on your machine is the check. Design and limits: [ADR-017](docs/adr/ADR-017-container-packaging.md).
+
+## Streaming simulation
+Replays stored transactions as a live feed through a bounded queue, with seeded delivery faults (late and reordered events, repeats, corrupted copies), a reorder buffer, and scoring either in process or through the running API. Predictions are appended to `data/predictions` (see [prediction store](docs/prediction-store.md)).
+```powershell
+.\scripts\dev.ps1 simulate      # last 7 days of the lake, in process, as fast as possible; needs models\advanced
+.\scripts\dev.ps1 predictions   # summary of what was stored
+# a messier run (jitter, repeats, corrupted copies), into a new folder:
+.\.venv\Scripts\python -m mmrisk.streaming run --jitter-seconds 30 --max-lateness 60 --duplicate-rate 0.02 --bad-rate 0.01 --store data\predictions_messy
+```
+Through the API (start it with the history cut at the same time, then stream from there; restart the API before streaming the same events again):
+```powershell
+.\.venv\Scripts\python -m mmrisk.api serve --history-until 2025-12-24T23:55:49
+.\.venv\Scripts\python -m mmrisk.streaming run --url http://127.0.0.1:8000 --from 2025-12-24T23:55:49
+```
+The run prints how every event ended (scored, rejected, dropped) and exits 1 if the books do not balance or the service failed. In Docker Compose: `$env:STREAM_FROM = "2025-12-24T00:00:00"; docker compose --profile simulate up --build` (create `data\predictions` first; TO VERIFY). Design and limits: [ADR-018](docs/adr/ADR-018-streaming-simulation.md).
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -130,6 +156,7 @@ The customer must exist in your data and the timestamp must be later than that c
 - [Cost model (assumed)](docs/cost-model.md)
 - [Model explanations](docs/model-explanations.md)
 - [Model card](docs/model-card.md)
+- [Prediction store](docs/prediction-store.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)
