@@ -134,5 +134,50 @@ The API has no authentication, so only 127.0.0.1 is allowed by default. `--allow
 **A `StarletteDeprecationWarning` about httpx during tests**
 Harmless: newer Starlette prefers `httpx2` for its test client. The tests work with either.
 
+**Docker uses too much memory on an 8 GB machine**
+Cap WSL2: create or edit `%UserProfile%\.wslconfig` with
+```
+[wsl2]
+memory=3GB
+processors=2
+```
+then run `wsl --shutdown` and start Docker Desktop again. Stop containers you do not need (`docker ps`, `docker stop <name>`) before `dev.ps1 up`.
+
+**`docker compose up` says the Docker engine is not running**
+Start Docker Desktop and wait until it says it is running, then retry.
+
+**The container is `starting` for a long time, then `unhealthy`**
+The API replays the whole history before it is ready (about 200,000 transactions take seconds natively, longer through Windows bind mounts). The health check waits up to two minutes. Read the log with `docker compose logs api`.
+
+**Log says `no model at /app/models/advanced/risk_model.joblib`**
+`models\advanced` is missing or empty on the host (Docker creates an empty folder for a missing mount). Run `.\scripts\dev.ps1 advanced` or `pipeline` first. A `--quick` pipeline run saves to `models\quick\advanced`: edit the first `volumes:` line in `docker-compose.yml` to use that folder.
+
+**Log says the lake has no completed transactions**
+`data\processed` must be the lake built by the ingestion step (it contains `cleaned`).
+
+**Container exits with code 137**
+It ran out of memory. Raise `mem_limit` in `docker-compose.yml` (about 1.2 KB per replayed transaction plus 290 MB) or replay less with `--history-until`.
+
+**`Read-only file system` in the log**
+The container runs with a read-only root filesystem and a writable `/tmp`. If something needs another writable path, add a `tmpfs:` entry for it and report it, because the assistant could not run the container to check this.
+
+**`python -m mmrisk.streaming run` says the store already has predictions (exit 2)**
+A second run would mix two replays. Use another `--store`, delete the folder, or add `--append` on purpose.
+
+**Streaming over HTTP: many `out_of_order`, `conflict` or `duplicate` outcomes**
+The API keeps what it has scored in memory, so it must be restarted before the same events are sent again, and it must have replayed exactly the history before `--from` (`serve --history-until <same time>`). A stream that starts earlier than the API's history looks like a flood of repeats.
+
+**`--from is required with --url`**
+In Docker Compose set `STREAM_FROM` first (`$env:STREAM_FROM = "2025-12-24T00:00:00"`); empty means no start time.
+
+**The simulator cannot write `data/predictions`**
+Create the folder first (`mkdir data\predictions`). On Linux the container user (10001) must be allowed to write it. TO VERIFY.
+
+**`balanced: false` in the report, or exit code 1**
+Events in must equal outcomes plus dropped. That is a bug, not a data problem: keep `stream_run.json` and open an issue.
+
+**`port is already allocated`**
+Something uses port 8000. Change the first number in `127.0.0.1:8000:8000`, and the `--url` of `smoke`.
+
 **`error: invalid cost` (exit code 2)**
 A cost cannot be negative and the review effectiveness must be between 0 and 1. See `docs/cost-model.md`.
