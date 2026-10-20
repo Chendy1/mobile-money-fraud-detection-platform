@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
 lint:
@@ -34,3 +34,15 @@ apicheck:
 	python -m mmrisk.api check
 serve:
 	python -m mmrisk.api serve
+up:
+	docker compose up --build
+down:
+	docker compose down
+smoke:
+	python -m mmrisk.api smoke
+
+simulate:
+	python -m mmrisk.streaming run --jitter-seconds 20 --duplicate-rate 0.01 --bad-rate 0.005
+
+predictions:
+	python -m mmrisk.streaming summary

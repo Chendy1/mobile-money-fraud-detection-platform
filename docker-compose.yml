@@ -1,0 +1,96 @@
+# Local scoring API. Needs a trained model and the data lake on the host first:
+#   .\scripts\dev.ps1 advanced    (or pipeline)  -> models\advanced
+#   data\processed from the ingestion step
+# Run:  docker compose up --build        Check:  python -m mmrisk.api smoke
+name: mmrisk
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mmrisk-api:local
+    # Published on the host's loopback address only: nothing on the network can reach it.
+    # The API has no authentication or TLS (Phase 18), so do not change this to 0.0.0.0.
+    ports:
+      - "127.0.0.1:8000:8000"
+    # The model and the lake are mounted read-only; they are not part of the image.
+    # The model file is a pickle: mount only a folder this project created.
+    volumes:
+      - ./models/advanced:/app/models/advanced:ro
+      - ./data/processed:/app/data/processed:ro
+    # To replay only part of the history, add flags after the image's own command, for example:
+    # command: ["python", "-m", "mmrisk.api", "serve", "--host", "0.0.0.0", "--allow-external",
+    #           "--model-dir", "/app/models/advanced", "--lake", "/app/data/processed",
+    #           "--history-until", "2025-12-01"]
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Measured natively: about 290 MB with no history and about 530 MB peak with 200,000
+    # transactions replayed (about 1.2 KB per transaction). Raise this for a larger lake.
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
+    restart: "no"
+    # With STREAM_FROM set, the API replays only the history before that time, so that the
+    # simulator (below) can stream everything from that time on. Unset, it replays everything.
+    environment:
+      MMRISK_HISTORY_UNTIL: ${STREAM_FROM:-}
+
+  # Event simulator (Phase 13): streams lake transactions from STREAM_FROM through a bounded queue
+  # into the API over HTTP and appends the predictions to ./data/predictions. Not started by
+  # default. Run (create the folder first; restart the API between runs, because it keeps what it
+  # has scored in memory):
+  #   mkdir data\predictions
+  #   $env:STREAM_FROM = "2025-12-24T00:00:00"
+  #   docker compose --profile simulate up --build
+  simulator:
+    profiles: ["simulate"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mmrisk-api:local
+    depends_on:
+      api:
+        condition: service_healthy
+    command:
+      - python
+      - -m
+      - mmrisk.streaming
+      - run
+      - --url
+      - http://api:8000
+      - --lake
+      - /app/data/processed
+      - --from
+      - ${STREAM_FROM:-}
+      - --store
+      - /app/data/predictions
+      - --limit
+      - "5000"
+      - --duplicate-rate
+      - "0.01"
+      - --bad-rate
+      - "0.005"
+      - --jitter-seconds
+      - "20"
+      - --max-lateness
+      - "60"
+    volumes:
+      - ./data/processed:/app/data/processed:ro
+      - ./data/predictions:/app/data/predictions
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 64
+    restart: "no"
