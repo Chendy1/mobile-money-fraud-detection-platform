@@ -13,7 +13,7 @@ import uuid
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from mmrisk.api.schemas import ErrorOut, ModelInfo, ScoreOut, TransactionIn
 from mmrisk.api.service import (
@@ -21,6 +21,7 @@ from mmrisk.api.service import (
     ScoringService,
     UnknownCustomerError,
 )
+from mmrisk.monitoring.metrics import METRICS_PATH, ApiMetrics, MetricsMiddleware
 
 log = logging.getLogger("mmrisk.api")
 
@@ -84,7 +85,7 @@ class _LimitBody:
         return await self.app(scope, replayed, send)
 
 
-def create_app(service: ScoringService | None, docs: bool = True) -> FastAPI:
+def create_app(service: ScoringService | None, docs: bool = True, metrics: bool = True) -> FastAPI:
     app = FastAPI(
         title="Mobile money transaction risk scoring (synthetic data only)",
         version="0.1.0",
@@ -113,6 +114,10 @@ def create_app(service: ScoringService | None, docs: bool = True) -> FastAPI:
         return response
 
     app.add_middleware(_LimitBody, limit=MAX_BODY_BYTES)
+    collector = ApiMetrics(lambda: app.state.service) if metrics else None
+    app.state.metrics = collector
+    if collector is not None:
+        app.add_middleware(MetricsMiddleware, metrics=collector)  # outermost: sees every request
 
     @app.exception_handler(RequestValidationError)
     async def invalid(request: Request, exc: RequestValidationError):
@@ -132,6 +137,14 @@ def create_app(service: ScoringService | None, docs: bool = True) -> FastAPI:
 
     def ready() -> ScoringService | None:
         return app.state.service
+
+    if collector is not None:
+
+        @app.get(METRICS_PATH, include_in_schema=False)
+        def metrics_endpoint():
+            """Prometheus text format: counts and timings only, nothing about a customer."""
+            body, content_type = collector.render()
+            return Response(body, media_type=content_type)
 
     @app.get("/health")
     def health():
@@ -159,6 +172,9 @@ def create_app(service: ScoringService | None, docs: bool = True) -> FastAPI:
         svc = ready()
         if svc is None:
             return _error(503, "not_ready", "no model loaded")
-        return svc.score(txn.model_dump())
+        result = svc.score(txn.model_dump())
+        if collector is not None:
+            collector.observe_score(result)
+        return result
 
     return app

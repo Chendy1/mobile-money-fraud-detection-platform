@@ -25,6 +25,7 @@ data/processed/*
 data/features/*
 data/predictions/*
 data/predictions_*/
+data/monitoring/
 !data/**/.gitkeep
 *.parquet
 *.duckdb
