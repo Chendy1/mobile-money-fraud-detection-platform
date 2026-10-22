@@ -176,6 +176,24 @@ Create the folder first (`mkdir data\predictions`). On Linux the container user 
 **`balanced: false` in the report, or exit code 1**
 Events in must equal outcomes plus dropped. That is a bug, not a data problem: keep `stream_run.json` and open an issue.
 
+**Grafana exits at once with `set GRAFANA_ADMIN_PASSWORD first`**
+Set it in the same PowerShell window: `$env:GRAFANA_ADMIN_PASSWORD = "<choose one>"`, then `.\scripts\dev.ps1 upmon`.
+
+**Grafana logs a `read-only file system` error (TO VERIFY)**
+Grafana runs with a read-only root and a writable data volume. If it needs another writable path, add a `tmpfs:` entry for it under `grafana` in `docker-compose.yml` and report it, because the assistant could not run the container.
+
+**Prometheus target `mmrisk-api` is DOWN**
+Open http://127.0.0.1:9090/targets. The API must be healthy (`docker compose ps`); Prometheus reaches it as `api:8000` on the Compose network, not through the published port.
+
+**The Grafana dashboard shows "No data"**
+No traffic yet: rate and share panels are empty until requests arrive. Run `python -m mmrisk.api smoke` or the simulator. Check the time range (last hour).
+
+**`python -m mmrisk.monitoring report` exits 2**
+A mistake in how it was called: no predictions in the store (run `simulate` first), a bad `--window` (use 30m, 1h or 1d), or a `--baseline` that is not a file written by `baseline`.
+
+**`WARN no unusual window` or a share WARN on a healthy store**
+Fraud comes in clusters, so shares move more than chance alone predicts (see ADR-019). Compare with the previous run before acting; a FAIL is the signal that matters.
+
 **`port is already allocated`**
 Something uses port 8000. Change the first number in `127.0.0.1:8000:8000`, and the `--url` of `smoke`.
 

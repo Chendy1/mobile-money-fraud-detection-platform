@@ -21,9 +21,10 @@ flowchart TB
   T --> M[(Model registry)]
   M --> A[FastAPI /v1/score]
   S[Event simulator + bounded queue + reorder buffer] --> A
-  A --> P[(Prediction store)]
+  S --> P[(Prediction store)]
   P --> D[Streamlit dashboard]
-  A --> PR[Prometheus] --> GR[Grafana]
+  P --> MC[Prediction checks]
+  A -->|/metrics| PR[Prometheus] --> GR[Grafana]
   P --> E[Evidently drift reports]
 ```
 
@@ -35,7 +36,7 @@ flowchart TB
 5. After ingestion, dataset checks (completeness, duplicates, referential integrity, label timing, volume, drift, freshness, consistency) produce a PASS/WARN/FAIL report (`python -m mmrisk.validation check`).
 6. Shared feature library computes behavioral features using only past data (point-in-time correct).
 7. The model scores each transaction; the API (`POST /v1/score`) returns the calibrated probability, the cost-based action, the risk level, the feature version and reason codes for flagged transactions (exact tree contributions). It records each scored transaction as history for the customer's later ones.
-8. Predictions are stored for the dashboard and drift monitoring.
+8. Predictions are stored (by the event simulator, Phase 13) for the dashboard and drift monitoring. The API exposes counters and timings at `/metrics` for Prometheus (Phase 14), and `python -m mmrisk.monitoring report` checks the stored predictions.
 
 ## ML lifecycle
 Time-based split, then rule baseline, Logistic Regression, Random Forest, LightGBM. Select on PR-AUC. Choose LOW/MEDIUM/HIGH thresholds from a cost model. Explain with SHAP, document in a model card, log to MLflow. A candidate replaces the champion only if it passes quality gates **and** receives manual approval. Rollback repoints the champion alias to the previous version.
