@@ -24,3 +24,19 @@ jobs:
           ruff format --check .
       - name: Test
         run: pytest --cov=src --cov-report=term-missing
+
+  docker-build:
+    # Builds the API image (nothing is pushed) and checks what the unit tests cannot.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t mmrisk-api:ci .
+      - name: LightGBM imports (needs the OpenMP runtime) and the CLI starts
+        run: |
+          docker run --rm --entrypoint python mmrisk-api:ci -c "import lightgbm, sklearn, fastapi, polars"
+          docker run --rm --entrypoint python mmrisk-api:ci -m mmrisk.api --help
+      - name: The image runs as a non-root user
+        run: test "$(docker run --rm --entrypoint id mmrisk-api:ci -u)" = "10001"
+      - name: The compose file is valid
+        run: docker compose config -q
