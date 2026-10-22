@@ -245,3 +245,98 @@ def test_a_slow_paced_run_takes_about_as_long_as_the_speed_says(model, data, par
     report = run_stream(few.to_dicts(), scorer, StreamConfig(speed=speed, max_lateness=0))
     took = time.perf_counter() - t0
     assert 0.45 < took < 3 and report["outcomes"]["scored"] == 20
+
+
+# ---- Phase 14: the metrics and the monitoring checks on a real stream ----
+
+
+def fetch(url):
+    import urllib.request
+
+    with urllib.request.urlopen(url, timeout=10) as r:  # noqa: S310
+        return r.read().decode()
+
+
+def series_value(text, series):
+    for line in text.splitlines():
+        if line.startswith(series + " "):
+            return float(line.rsplit(" ", 1)[1])
+    raise AssertionError(f"{series} not exposed")
+
+
+def test_the_api_metrics_agree_with_what_a_stream_did(model, data, parts_, tmp_path):
+    history, stream, _ = parts_
+    app = create_app(ScoringService(model, data["customers"], history))
+    port = free_port()
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error"))
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    for _ in range(200):
+        if server.started:
+            break
+        time.sleep(0.05)
+    try:
+        url = f"http://127.0.0.1:{port}"
+        scorer = HttpScorer(url)
+        assert scorer.ready()
+        faults = FaultConfig(duplicate_rate=0.05, bad_rate=0.03, jitter_seconds=60, seed=2)
+        report, path = run(model, data, parts_, tmp_path, faults, scorer=scorer)
+        again = scorer.score(stream.to_dicts()[0])  # a repeat sent straight to the API
+        text = fetch(url + "/metrics")
+    finally:
+        server.should_exit = True
+        thread.join(timeout=10)
+    stored = read(path)
+    assert again.status == "duplicate" and report["outcomes"]["invalid"] > 0
+    for action in ("ALLOW", "REVIEW", "BLOCK"):
+        counted = series_value(text, f'mmrisk_transactions_scored_total{{action="{action}"}}')
+        assert counted == (stored["action"] == action).sum(), action
+    assert series_value(text, "mmrisk_risk_probability_count") == LIMIT
+    assert series_value(text, "mmrisk_duplicate_requests_total") == 1
+    bad = 'mmrisk_http_requests_total{endpoint="/v1/score",method="POST",status="422"}'
+    assert series_value(text, bad) == report["outcomes"]["invalid"]
+    assert series_value(text, "mmrisk_history_transactions") == history.height + LIMIT
+    assert series_value(text, "mmrisk_service_ready") == 1
+    # the probability histogram's sum is the sum of the stored probabilities
+    assert series_value(text, "mmrisk_risk_probability_sum") == pytest.approx(
+        stored["risk_probability"].sum(), rel=1e-9
+    )
+    for private in (stream["customer_id"][0], stream["transaction_id"][0]):
+        assert private not in text
+
+
+def test_monitoring_accepts_a_healthy_stream_and_catches_a_changed_decision_rule(
+    model, data, parts_, tmp_path, capsys
+):
+    from mmrisk.monitoring.cli import main as monitor
+
+    _, stream, _ = parts_
+    healthy, hp = run(model, data, parts_, tmp_path / "healthy")
+    # the same model with expensive reviews flags far fewer transactions
+    costly = RiskModel(model.scorer, model.calibrator, CostModel(review_cost=2000.0))
+    changed, cp = run(costly, data, parts_, tmp_path / "changed")
+    n_healthy = read(hp)["action"].ne("ALLOW").sum()
+    n_changed = read(cp)["action"].ne("ALLOW").sum()
+    assert n_healthy >= 20 and n_changed < n_healthy * 0.5  # the setting really changed decisions
+    out = tmp_path / "mon"
+    assert monitor(["baseline", "--store", str(hp), "--out", str(out), "--window", "6h"]) == 0
+    base = str(out / "baseline.json")
+    ok = ["report", "--store", str(hp), "--baseline", base, "--out", str(out), "--window", "6h"]
+    assert monitor(ok) == 0
+    capsys.readouterr()
+    bad = [
+        "report",
+        "--store",
+        str(cp),
+        "--baseline",
+        base,
+        "--out",
+        str(out / "x"),
+        "--window",
+        "6h",
+    ]
+    code = monitor(bad)
+    printed = capsys.readouterr().out
+    assert code == 1 and "FAIL  flagged share like the baseline" in printed
+    assert (out / "x" / "report.md").exists() and (out / "x" / "report.json").exists()
+    assert stream.height == LIMIT and healthy["balanced"] and changed["balanced"]

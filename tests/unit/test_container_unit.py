@@ -96,7 +96,7 @@ def test_it_installs_the_serving_dependencies_only(docker):
 def test_the_serve_extra_has_what_a_saved_model_needs():
     text = (ROOT / "pyproject.toml").read_text()
     block = re.search(r"^serve = \[(.*?)\]", text, re.M | re.S).group(1)
-    for package in ("scikit-learn", "lightgbm", "fastapi", "uvicorn"):
+    for package in ("scikit-learn", "lightgbm", "fastapi", "uvicorn", "prometheus-client"):
         assert package in block
     for heavy in ("matplotlib", "shap", "mlflow", "duckdb", "pytest"):
         assert heavy not in block
