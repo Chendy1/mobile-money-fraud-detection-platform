@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
 lint:
@@ -37,7 +37,7 @@ serve:
 up:
 	docker compose up --build
 down:
-	docker compose down
+	docker compose --profile monitoring --profile simulate down
 smoke:
 	python -m mmrisk.api smoke
 
@@ -46,3 +46,12 @@ simulate:
 
 predictions:
 	python -m mmrisk.streaming summary
+
+baseline:
+	python -m mmrisk.monitoring baseline
+
+monitor:
+	python -m mmrisk.monitoring report $(if $(wildcard data/monitoring/baseline.json),--baseline data/monitoring/baseline.json)
+
+upmon:
+	docker compose --profile monitoring up --build
