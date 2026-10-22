@@ -94,3 +94,72 @@ services:
     cpus: 1.0
     pids_limit: 64
     restart: "no"
+
+  # Monitoring (Phase 14). Opt-in:  $env:GRAFANA_ADMIN_PASSWORD = "<choose one>"
+  #                                 docker compose --profile monitoring up --build
+  # Prometheus http://127.0.0.1:9090 scrapes the API's /metrics; Grafana http://127.0.0.1:3000
+  # (user admin, the password above) shows a provisioned dashboard. Both are published on the
+  # loopback address only. Images are pinned tags, not digests, and none of this has been run by
+  # the assistant (Docker Hub is not reachable from its sandbox): TO VERIFY.
+  prometheus:
+    profiles: ["monitoring"]
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=2d
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infrastructure/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384m
+    cpus: 0.5
+    pids_limit: 64
+    restart: "no"
+
+  grafana:
+    profiles: ["monitoring"]
+    image: grafana/grafana:11.3.0
+    depends_on:
+      - prometheus
+    # No default password: it must be provided, so none is stored in this file or the image.
+    entrypoint:
+      - sh
+      - -c
+      - 'test -n "$$GF_SECURITY_ADMIN_PASSWORD" || { echo "set GRAFANA_ADMIN_PASSWORD first" >&2; exit 1; }; exec /run.sh'
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 384m
+    cpus: 0.5
+    pids_limit: 128
+    restart: "no"
+
+volumes:
+  prometheus-data:
+  grafana-data:

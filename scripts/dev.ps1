@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -28,8 +28,18 @@ switch ($Task) {
     "apicheck" { & $venvPython -m mmrisk.api check }
     "serve" { & $venvPython -m mmrisk.api serve }
     "up" { docker compose up --build }
-    "down" { docker compose down }
+    "down" { docker compose --profile monitoring --profile simulate down }
     "smoke" { & $venvPython -m mmrisk.api smoke }
     "simulate" { & $venvPython -m mmrisk.streaming run --jitter-seconds 20 --duplicate-rate 0.01 --bad-rate 0.005 }
+    "baseline" { & $venvPython -m mmrisk.monitoring baseline }
+    "monitor" {
+        $base = "data\monitoring\baseline.json"
+        if (Test-Path $base) {
+            & $venvPython -m mmrisk.monitoring report --baseline $base
+        } else {
+            & $venvPython -m mmrisk.monitoring report
+        }
+    }
+    "upmon" { docker compose --profile monitoring up --build }
     "predictions" { & $venvPython -m mmrisk.streaming summary }
 }
