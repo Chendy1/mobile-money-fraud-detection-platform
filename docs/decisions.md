@@ -25,6 +25,8 @@
 
 | [018](adr/ADR-018-streaming-simulation.md) | Streaming simulation: bounded queue, reorder buffer, append-only prediction store | Accepted |
 
+| [019](adr/ADR-019-monitoring.md) | Monitoring: API metrics, Prometheus and Grafana, checks on stored predictions | Accepted |
+
 Planned: ECS vs EKS.
 
 ## Rejected technologies
