@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 14 complete (monitoring). Drift detection comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 15 complete (drift detection). Gated retraining comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -13,7 +13,7 @@ Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accou
 Synthetic data generator, data lake (raw/validated/cleaned), data quality checks, EDA, point-in-time-safe features, model comparison (rules, Logistic Regression, Random Forest, LightGBM), SHAP explainability, MLflow tracking, FastAPI inference, event simulation, Docker Compose, monitoring and drift detection, gated retraining, Streamlit dashboard, CI, and optional AWS design (Terraform, plan-only).
 
 ## Stack (summary)
-Python 3.12, Polars, DuckDB + Parquet, scikit-learn, LightGBM, SHAP, MLflow, FastAPI, Streamlit, Evidently, Prometheus + Grafana, Docker Compose, pytest, ruff, GitHub Actions, Terraform (optional). Rationale: [docs/decisions.md](docs/decisions.md).
+Python 3.12, Polars, DuckDB + Parquet, scikit-learn, LightGBM, SHAP, MLflow, FastAPI, Streamlit, Prometheus + Grafana, Docker Compose, pytest, ruff, GitHub Actions, Terraform (optional). Rationale: [docs/decisions.md](docs/decisions.md). (Evidently was replaced by a small tested PSI implementation; see [ADR-020](docs/adr/ADR-020-drift-detection.md).)
 
 ## Local setup (Windows PowerShell)
 Run from the repository root. Requires Python 3.11+ and Git.
@@ -153,6 +153,15 @@ $env:GRAFANA_ADMIN_PASSWORD = "<choose one>"; .\scripts\dev.ps1 upmon   # Promet
 ```
 All thresholds are assumptions. These checks see decisions, not correctness (no labels) or input drift (Phase 15).
 
+## Drift detection
+Has the data the model sees moved away from what it was validated on? `python -m mmrisk.drift` summarises the validation window once (a few numbers per feature) and compares any later window with it using the population stability index, for the 28 features and for the model's score ([guide](docs/drift.md), [ADR-020](docs/adr/ADR-020-drift-detection.md)).
+```powershell
+.\scripts\dev.ps1 driftref      # data\drift\reference.json
+.\scripts\dev.ps1 drift         # last 7 days against it; exit code 1 when drift is detected
+.\.venv\Scripts\python -m mmrisk.drift report --scale-amounts 3   # demonstration of a detected shift
+```
+Calendar and accumulating features are handled explicitly, thresholds are conventions, and a rise of 50% in amounts goes unnoticed (measured). No drift does not mean the model is right.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Decisions (ADR index)](docs/decisions.md)
@@ -168,6 +177,7 @@ All thresholds are assumptions. These checks see decisions, not correctness (no 
 - [Model card](docs/model-card.md)
 - [Prediction store](docs/prediction-store.md)
 - [Monitoring guide](docs/monitoring.md)
+- [Drift guide](docs/drift.md)
 - [Data dictionary](docs/data-dictionary.md)
 - [Testing](docs/testing.md)
 - [Troubleshooting](docs/troubleshooting.md)

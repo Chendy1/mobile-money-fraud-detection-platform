@@ -1,5 +1,5 @@
 # Monitoring guide
-Two layers, for two questions. All thresholds are assumptions for a synthetic simulation. Design: [ADR-019](adr/ADR-019-monitoring.md).
+Two layers, for two questions. All thresholds are assumptions for a synthetic simulation. Design: [ADR-019](adr/ADR-019-monitoring.md). Drift in the inputs has its own [guide](drift.md).
 
 ## 1. Is the service working? (Prometheus and Grafana)
 ```powershell
@@ -41,4 +41,4 @@ Report: `data\monitoring\report.md` and `report.json`. Exit code 1 only when a c
 | volume like the baseline | within a factor of 2 of the baseline's events per hour | WARN |
 | no unusual window | no testable window at |z| 5 or more | WARN only, never FAIL |
 
-Reading a result: the shares are compared with a binomial z score, but fraud comes in clusters, so a z of 2 to 4 happens in healthy data (measured). A FAIL on the flagged share means decisions changed a lot (a different model, cost setting or input problem); it does not say which. These checks cannot tell whether decisions were right (labels arrive up to 45 days later) or whether inputs drifted (Phase 15).
+Reading a result: the shares are compared with a binomial z score, but fraud comes in clusters, so a z of 2 to 4 happens in healthy data (measured). A FAIL on the flagged share means decisions changed a lot (a different model, cost setting or input problem); it does not say which. These checks cannot tell whether decisions were right (labels arrive up to 45 days later) or whether inputs drifted (see the [drift guide](drift.md)).

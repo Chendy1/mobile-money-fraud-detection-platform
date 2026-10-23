@@ -194,6 +194,15 @@ A mistake in how it was called: no predictions in the store (run `simulate` firs
 **`WARN no unusual window` or a share WARN on a healthy store**
 Fraud comes in clusters, so shares move more than chance alone predicts (see ADR-019). Compare with the previous run before acting; a FAIL is the signal that matters.
 
+**`python -m mmrisk.drift report` exits 2**
+A mistake in the command: no reference (run `driftref` first), a reference for another feature version (make a new one after retraining), a time that is not ISO (`2025-12-24T00:00:00`), `--from` after `--to`, a window with under 500 transactions, or `--scale-amounts` at zero or below. For a model saved without its split, give `--from` and `--to` to `reference`.
+
+**Drift report says MAJOR for `n_prior_txns` or `account_age_days` but no drift detected**
+Those features grow with time by construction; they are shown but not counted (ADR-020). `is_salary_window` and `day_of_week` show as skipped for windows shorter than 31 and 7 days.
+
+**Everything is `stable` after `--scale-amounts 1.3`**
+Expected: a 30% rise in amounts gives a PSI near 0.04, below the 0.1 limit. A rise of 2x is moderate and 3x major (ADR-020). The detector sees large shifts only.
+
 **`port is already allocated`**
 Something uses port 8000. Change the first number in `127.0.0.1:8000:8000`, and the `--url` of `smoke`.
 
