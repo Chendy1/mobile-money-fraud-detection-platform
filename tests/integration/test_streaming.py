@@ -340,3 +340,170 @@ def test_monitoring_accepts_a_healthy_stream_and_catches_a_changed_decision_rule
     assert code == 1 and "FAIL  flagged share like the baseline" in printed
     assert (out / "x" / "report.md").exists() and (out / "x" / "report.json").exists()
     assert stream.height == LIMIT and healthy["balanced"] and changed["balanced"]
+
+
+# ---- Phase 15: drift detection on a real lake and model ----
+
+REF_FROM, REF_TO = "2025-04-01T00:00:00", "2025-07-01T00:00:00"
+
+
+def drift_cli(*args):
+    from mmrisk.drift.cli import main as drift
+
+    return drift([str(a) for a in args])
+
+
+@pytest.fixture(scope="module")
+def drift_ref(env, model_dir, tmp_path_factory):
+    out = tmp_path_factory.mktemp("drift") / "reference.json"
+    code = drift_cli(
+        "reference", "--lake", env[1], "--model-dir", model_dir,
+        "--from", REF_FROM, "--to", REF_TO, "--out", out,
+    )  # fmt: skip
+    assert code == 0
+    return out
+
+
+def drift_report(env, model_dir, ref, out, *extra):
+    code = drift_cli("report", "--lake", env[1], "--model-dir", model_dir, "--reference", ref,
+                     "--out", out, *extra)  # fmt: skip
+    return code, json.loads((out / "report.json").read_text()) if (
+        out / "report.json"
+    ).exists() else None
+
+
+def psi_of(payload, name):
+    return {r["name"]: r for r in payload["results"]}[name]
+
+
+def test_a_later_healthy_window_shows_no_drift(env, model_dir, drift_ref, tmp_path):
+    code, p = drift_report(env, model_dir, drift_ref, tmp_path, "--last-days", "30")
+    assert code == 0 and p["drift_detected"] is False
+    assert p["rows"] > 500 and p["injected"] is None
+    for r in p["results"]:
+        if r["status"] == "FAIL":  # only a feature that is expected to move may be MAJOR
+            assert r["policy"] == "accumulating", r
+    assert psi_of(p, "is_salary_window")["status"] == "SKIPPED"  # 30 days is under a month
+    assert (tmp_path / "report.md").read_text().startswith("# Drift report")
+    assert sorted(x.name for x in tmp_path.iterdir()) == ["report.json", "report.md"]
+
+
+def test_scaled_amounts_are_found_and_named(env, model_dir, drift_ref, tmp_path):
+    code, p = drift_report(env, model_dir, drift_ref, tmp_path, "--last-days", "30",
+                           "--scale-amounts", "4")  # fmt: skip
+    assert code == 1 and p["drift_detected"] is True and "amount" in p["verdict"]
+    assert (
+        psi_of(p, "amount_kes")["status"] == "FAIL" and psi_of(p, "amount_log")["status"] == "FAIL"
+    )
+    assert psi_of(p, "channel")["status"] == "PASS"  # what did not change is not blamed
+    assert p["injected"] and "Injected shift" in (tmp_path / "report.md").read_text()
+
+
+def test_a_scale_of_one_changes_nothing(env, model_dir, drift_ref, tmp_path):
+    _, plain = drift_report(env, model_dir, drift_ref, tmp_path / "a", "--last-days", "30")
+    _, one = drift_report(env, model_dir, drift_ref, tmp_path / "b", "--last-days", "30",
+                          "--scale-amounts", "1")  # fmt: skip
+    for a, b in zip(plain["results"], one["results"], strict=True):
+        assert a["psi"] == b["psi"] and a["status"] == b["status"]
+
+
+def test_the_reference_compared_with_its_own_window_shows_no_difference(
+    env, model_dir, drift_ref, tmp_path
+):
+    code, p = drift_report(env, model_dir, drift_ref, tmp_path, "--from", REF_FROM, "--to", REF_TO)
+    assert code == 0 and p["days"] == pytest.approx(91.0)
+    scored = [r for r in p["results"] if r["psi"] is not None]
+    assert len(scored) == 29 and all(
+        abs(r["psi"]) < 1e-9 for r in scored
+    )  # 28 features + the score
+
+
+def test_a_replaced_model_shows_as_a_change_in_the_score(
+    env, model, model_dir, drift_ref, tmp_path
+):
+    other = RiskModel(model.scorer, PlattCalibrator(1.0, 3.0, "logit"), CostModel(review_cost=2.0))
+    other.save(tmp_path / "other")
+    code, p = drift_report(
+        env, tmp_path / "other", drift_ref, tmp_path / "out", "--last-days", "30"
+    )
+    assert code == 1 and psi_of(p, "risk_probability")["status"] == "FAIL"
+    assert p["verdict"].startswith("DRIFT DETECTED") and "risk_probability" in p["verdict"]
+    for r in p["results"]:
+        if r["policy"] == "monitored":
+            assert r["status"] != "FAIL", r  # the inputs did not move; only the model did
+
+
+def test_the_validation_window_comes_from_the_model_when_it_is_saved_there(
+    env, model_dir, tmp_path
+):
+    meta = json.loads((model_dir / "risk_model.json").read_text())
+    assert "split" not in meta  # a test model has none: the reference needs --from and --to
+    assert (
+        drift_cli(
+            "reference", "--lake", env[1], "--model-dir", model_dir, "--out", tmp_path / "r.json"
+        )
+        == 2
+    )
+    import shutil
+
+    copy = tmp_path / "model"
+    shutil.copytree(model_dir, copy)
+    meta["split"] = {"val_start": "2025-05-01 00:00:00", "test_start": "2025-06-01 00:00:00"}
+    (copy / "risk_model.json").write_text(json.dumps(meta))
+    ref = tmp_path / "r.json"
+    assert drift_cli("reference", "--lake", env[1], "--model-dir", copy, "--out", ref) == 0
+    assert json.loads(ref.read_text())["window"] == {
+        "from": "2025-05-01T00:00:00",
+        "to": "2025-06-01T00:00:00",
+    }
+
+
+def test_drift_user_mistakes_exit_two_with_nothing_written(
+    env, model_dir, drift_ref, tmp_path, capsys
+):
+    ok = ["--lake", env[1], "--model-dir", model_dir]
+    out = tmp_path / "o"
+    bad_version = tmp_path / "v.json"
+    data = json.loads(drift_ref.read_text())
+    data["feature_version"] = "9.9"
+    bad_version.write_text(json.dumps(data))
+    rep = ["report", *ok, "--reference", drift_ref, "--out", out]
+    cases = [
+        (["report", *ok, "--reference", tmp_path / "none.json", "--out", out], "cannot read"),
+        (["report", *ok, "--reference", bad_version, "--out", out], "feature version"),
+        ([*rep, "--from", "soon"], "ISO time"),
+        ([*rep, "--from", "2025-12-30", "--to", "2025-12-01"], "before"),
+        ([*rep, "--scale-amounts", "0"], "above zero"),
+        ([*rep, "--last-days", "0"], "above zero"),
+        ([*rep, "--last-days", "1"], "at least"),
+        ([*rep, "--from", "2030-01-01", "--to", "2030-02-01"], "no transactions"),
+        (
+            [
+                "reference",
+                *ok,
+                "--from",
+                "2025-06-01",
+                "--to",
+                "2025-05-01",
+                "--out",
+                out / "r.json",
+            ],
+            "before",
+        ),
+        (
+            [
+                "reference",
+                "--lake",
+                tmp_path / "nolake",
+                "--model-dir",
+                model_dir,
+                "--out",
+                out / "r.json",
+            ],
+            "not found",
+        ),
+    ]
+    for args, word in cases:
+        assert drift_cli(*args) == 2, args
+        assert word in capsys.readouterr().err, args
+    assert not out.exists()
