@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
 lint:
@@ -52,6 +52,12 @@ baseline:
 
 monitor:
 	python -m mmrisk.monitoring report $(if $(wildcard data/monitoring/baseline.json),--baseline data/monitoring/baseline.json)
+
+driftref:
+	python -m mmrisk.drift reference
+
+drift:
+	python -m mmrisk.drift report
 
 upmon:
 	docker compose --profile monitoring up --build
