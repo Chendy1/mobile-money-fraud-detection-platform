@@ -26,6 +26,7 @@ data/features/*
 data/predictions/*
 data/predictions_*/
 data/monitoring/
+data/drift/
 !data/**/.gitkeep
 *.parquet
 *.duckdb
