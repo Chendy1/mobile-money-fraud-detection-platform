@@ -27,6 +27,8 @@
 
 | [019](adr/ADR-019-monitoring.md) | Monitoring: API metrics, Prometheus and Grafana, checks on stored predictions | Accepted |
 
+| [020](adr/ADR-020-drift-detection.md) | Drift detection: PSI against a frozen validation-window reference; Evidently not used | Accepted |
+
 Planned: ECS vs EKS.
 
 ## Rejected technologies
