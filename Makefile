@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
 lint:
@@ -61,3 +61,15 @@ drift:
 
 upmon:
 	docker compose --profile monitoring up --build
+
+regboot:
+	python -m mmrisk.registry bootstrap
+
+regls:
+	python -m mmrisk.registry list
+
+retrain-check:
+	python -m mmrisk.retrain check
+
+retrain:
+	python -m mmrisk.retrain run
