@@ -195,6 +195,9 @@ def test_data_too_short_is_an_error(env, registry):
 
 
 def cli(env, registry, *args):
+    if args[0] == "check" and "--drift-report" not in args:
+        # never read the developer's own data/drift/report.json through the default path
+        args = (*args, "--drift-report", str(env["root"] / "no-drift-report.json"))
     return retrain_cli([args[0], "--lake", str(env["lake"]), "--registry", str(registry.root),
                         "--out", str(env["root"] / "out"), *args[1:]])  # fmt: skip
 
