@@ -38,8 +38,10 @@ flowchart TB
 7. The model scores each transaction; the API (`POST /v1/score`) returns the calibrated probability, the cost-based action, the risk level, the feature version and reason codes for flagged transactions (exact tree contributions). It records each scored transaction as history for the customer's later ones.
 8. Predictions are stored (by the event simulator, Phase 13) for the dashboard and drift monitoring. The API exposes counters and timings at `/metrics` for Prometheus (Phase 14), and `python -m mmrisk.monitoring report` checks the stored predictions. `python -m mmrisk.drift report` (Phase 15) compares the features and scores of a lake window with a frozen reference from the validation window.
 
+9. A retrain check combines the drift report, the champion's age and new fraud labels (Phase 16). A candidate trained on newer data is scored against the champion on the same newest matured window and saved in a file-based registry; it is promoted only by an explicit, recorded step, and rollback repoints `production.json`. See ADR-021.
+
 ## ML lifecycle
-Time-based split, then rule baseline, Logistic Regression, Random Forest, LightGBM. Select on PR-AUC. Choose LOW/MEDIUM/HIGH thresholds from a cost model. Explain with SHAP, document in a model card, log to MLflow. A candidate replaces the champion only if it passes quality gates **and** receives manual approval. Rollback repoints the champion alias to the previous version.
+Time-based split, then rule baseline, Logistic Regression, Random Forest, LightGBM. Select on PR-AUC. Choose LOW/MEDIUM/HIGH thresholds from a cost model. Explain with SHAP, document in a model card, log to MLflow. A candidate replaces the champion only if it passes quality gates **and** is promoted by a person (or by the opt-in `--auto-promote`, never for a quick-mode candidate). The registry is a folder, not MLflow's registry (ADR-021). Rollback repoints `production.json` to the previous version.
 
 ## Local vs optional cloud
 | Local (default) | Optional AWS (design, plan-only) | Reason |

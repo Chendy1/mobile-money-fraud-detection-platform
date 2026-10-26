@@ -28,6 +28,7 @@
 | [019](adr/ADR-019-monitoring.md) | Monitoring: API metrics, Prometheus and Grafana, checks on stored predictions | Accepted |
 
 | [020](adr/ADR-020-drift-detection.md) | Drift detection: PSI against a frozen validation-window reference; Evidently not used | Accepted |
+| [021](adr/ADR-021-gated-retraining.md) | Gated retraining: file-based registry, trigger check, candidate-vs-champion gates; promotion explicit | Accepted |
 
 Planned: ECS vs EKS.
 

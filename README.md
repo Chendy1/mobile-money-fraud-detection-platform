@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 15 complete (drift detection). Gated retraining comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 16 complete (gated retraining). The dashboard comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -162,8 +162,19 @@ Has the data the model sees moved away from what it was validated on? `python -m
 ```
 Calendar and accumulating features are handled explicitly, thresholds are conventions, and a rise of 50% in amounts goes unnoticed (measured). No drift does not mean the model is right.
 
+## Gated retraining
+Should the model be retrained, and is a new one safe? `python -m mmrisk.retrain check` looks at the drift report, the model's age and the number of new fraud labels; `run` trains a candidate on the newest data, scores it and the champion once on the same newest matured window, and applies gates (enough fraud, no overlap with the champion's training, PR-AUC and cost not worse beyond a margin, calibration, flagged share, reload check). The candidate is always saved in a file-based registry (`models/registry`); promotion is a separate, recorded step and rollback is one command ([guide](docs/retraining.md), [ADR-021](docs/adr/ADR-021-gated-retraining.md)).
+```powershell
+.\scripts\dev.ps1 regboot         # first model into the registry
+.\scripts\dev.ps1 retrain-check   # exit 1 = retrain recommended
+.\scripts\dev.ps1 retrain         # candidate + gates; exit 1 = rejected
+.\.venv\Scripts\python -m mmrisk.registry promote v0002 --reason "gates passed, report reviewed"
+```
+Every threshold is an assumption. On the generated data the 45-day test window holds about a hundred frauds, so the gates cannot see differences smaller than about 0.03 PR-AUC (measured, ADR-021).
+
 ## Documentation
 - [Architecture](docs/architecture.md)
+- [Retraining guide](docs/retraining.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
 - [Threat model](docs/threat-model.md)
