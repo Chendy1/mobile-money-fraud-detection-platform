@@ -38,6 +38,14 @@ def test_drift_fires():
     assert "MAJOR" in next(t for t in d.triggers if t.name == "drift").detail
 
 
+def test_a_demonstration_drift_report_is_ignored():
+    demo = {"drift_detected": True, "verdict": "MAJOR", "injected": "amounts multiplied by 3"}
+    d = decide(drift=demo)
+    assert not d.retrain and fired(d)["drift"] is None
+    assert "demonstration" in next(t for t in d.triggers if t.name == "drift").detail
+    assert decide(drift={**demo, "injected": None}).retrain  # a real report still counts
+
+
 def test_age_limit_is_exclusive():
     th = Triggers(max_model_age_days=90)
     assert fired(decide(model_age_days=90.0, th=th))["model_age"] is False

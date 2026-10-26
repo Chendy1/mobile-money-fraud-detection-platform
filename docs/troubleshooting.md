@@ -200,6 +200,9 @@ A mistake in the command: no reference (run `driftref` first), a reference for a
 **`python -m mmrisk.retrain run` says the candidate was rejected although it looks no worse**
 Look at the interval printed on the `pr_auc` and `cost` lines. On the generated data the test window holds about a hundred frauds, so the interval is wide; a margin tighter than it rejects equal models (ADR-021). The candidate is still in the registry (`registry list`, `registry show vNNNN`). Do not lower a margin to get a pass without reading the report; promotion of a rejected version needs `--force` and is recorded.
 
+**`retrain-check` says RETRAIN RECOMMENDED because of drift, but you only ran the demonstration**
+A drift report made with `--scale-amounts` is marked as injected and is ignored by the check (shown as `unknown`). Delete `data\\drift\\report.json` or run `dev.ps1 drift` again for a real report.
+
 **`retrain run` stops at `data_sufficiency`**
 The data has too little fraud in train, validation or test for the (assumed) minimums. Generate more data or lower `--min-train-fraud`, `--min-val-fraud`, `--min-test-fraud` knowingly. Nothing is registered in that case.
 

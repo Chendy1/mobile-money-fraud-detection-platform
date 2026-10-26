@@ -1,7 +1,8 @@
 """When is a retrain worth doing? Pure decision logic; the CLI gathers the inputs.
 
 Triggers (any one is enough):
-  drift          the latest drift report says major drift (PSI above the fail limit)
+  drift          the latest drift report says major drift (PSI above the fail limit); a report
+                 made with --scale-amounts is a demonstration and is ignored
   model_age      the champion's training data ended too long ago (simulated time, not the clock)
   new_labels     enough fraud labels exist on transactions newer than the champion's data
   forced         the person asked
@@ -45,6 +46,9 @@ def evaluate(
 
     if drift is None:
         out.append(Trigger("drift", None, "no drift report given or found"))
+    elif drift.get("injected"):
+        out.append(Trigger("drift", None, "the drift report is a demonstration "
+                           f"({drift['injected']}); ignored"))  # fmt: skip
     else:
         fired = bool(drift["drift_detected"])
         out.append(Trigger("drift", fired, f"drift report {drift.get('window', '?')}: "
