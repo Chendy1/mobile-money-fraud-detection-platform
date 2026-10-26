@@ -197,6 +197,21 @@ Fraud comes in clusters, so shares move more than chance alone predicts (see ADR
 **`python -m mmrisk.drift report` exits 2**
 A mistake in the command: no reference (run `driftref` first), a reference for another feature version (make a new one after retraining), a time that is not ISO (`2025-12-24T00:00:00`), `--from` after `--to`, a window with under 500 transactions, or `--scale-amounts` at zero or below. For a model saved without its split, give `--from` and `--to` to `reference`.
 
+**`python -m mmrisk.retrain run` says the candidate was rejected although it looks no worse**
+Look at the interval printed on the `pr_auc` and `cost` lines. On the generated data the test window holds about a hundred frauds, so the interval is wide; a margin tighter than it rejects equal models (ADR-021). The candidate is still in the registry (`registry list`, `registry show vNNNN`). Do not lower a margin to get a pass without reading the report; promotion of a rejected version needs `--force` and is recorded.
+
+**`retrain run` stops at `data_sufficiency`**
+The data has too little fraud in train, validation or test for the (assumed) minimums. Generate more data or lower `--min-train-fraud`, `--min-val-fraud`, `--min-test-fraud` knowingly. Nothing is registered in that case.
+
+**`registry promote` refuses**
+The version is not `approved`, was trained with `--quick`, or is already in production. `--force` overrides the first two and is recorded in `models\registry\history.jsonl`.
+
+**API still serves the old model after promote or rollback**
+The API loads the model at start. Restart it.
+
+**`... does not match its recorded checksum`**
+The model file in `models\registry\versions\vNNNN` changed after it was registered (copy error, disk problem, edit). Restore it or register a new version. The checksum cannot protect against someone who can write the registry (the file is a pickle).
+
 **Drift report says MAJOR for `n_prior_txns` or `account_age_days` but no drift detected**
 Those features grow with time by construction; they are shown but not counted (ADR-020). `is_salary_window` and `day_of_week` show as skipped for windows shorter than 31 and 7 days.
 
