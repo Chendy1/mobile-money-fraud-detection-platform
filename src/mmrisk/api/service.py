@@ -53,9 +53,18 @@ class DuplicateConflictError(ConflictError):
 def load_model(model_dir: Path) -> RiskModel:
     """Load a saved bundle and refuse one built for other features.
 
+    `model_dir` is a folder with a saved model or the root of a model registry (then the
+    production version is loaded).
+
     The bundle is a pickle: only load files that you created. Loading a file from someone else
     can run their code.
     """
+    from mmrisk.registry import RegistryError, resolve_model_dir
+
+    try:
+        model_dir = resolve_model_dir(Path(model_dir))  # a registry root means its production model
+    except RegistryError as exc:
+        raise ModelLoadError(str(exc)) from None
     path = Path(model_dir) / BUNDLE_FILE
     if not path.exists():
         raise ModelLoadError(f"no model at {path}; run the advanced step or the pipeline first")

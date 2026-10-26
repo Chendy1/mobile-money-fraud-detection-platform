@@ -23,6 +23,7 @@ from mmrisk.drift.report import markdown, text, verdict
 from mmrisk.features import compute_features
 from mmrisk.features.registry import feature_names
 from mmrisk.monitoring.cli import _write
+from mmrisk.registry import resolve_model_dir
 
 DEFAULT_OUT = Path("data/drift")
 DEFAULT_REF = DEFAULT_OUT / "reference.json"
@@ -43,12 +44,13 @@ def _when(text_: str | None, what: str) -> datetime | None:
 
 def _split_bounds(model_dir: Path) -> tuple[datetime, datetime]:
     try:
-        meta = json.loads((Path(model_dir) / "risk_model.json").read_text(encoding="utf-8"))
+        folder = resolve_model_dir(Path(model_dir))
+        meta = json.loads((folder / "risk_model.json").read_text(encoding="utf-8"))
         return (
             datetime.fromisoformat(meta["split"]["val_start"]),
             datetime.fromisoformat(meta["split"]["test_start"]),
         )
-    except (OSError, ValueError, KeyError, TypeError):
+    except (OSError, ValueError, KeyError, TypeError):  # RegistryError is a ValueError
         raise UsageError(
             f"cannot read the validation window from {model_dir}; give --from and --to"
         ) from None
