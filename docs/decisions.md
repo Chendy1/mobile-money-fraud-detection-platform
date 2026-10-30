@@ -29,6 +29,7 @@
 
 | [020](adr/ADR-020-drift-detection.md) | Drift detection: PSI against a frozen validation-window reference; Evidently not used | Accepted |
 | [021](adr/ADR-021-gated-retraining.md) | Gated retraining: file-based registry, trigger check, candidate-vs-champion gates; promotion explicit | Accepted |
+| [022](adr/ADR-022-dashboard.md) | Dashboard: read-only Streamlit page on a tested, Streamlit-free data layer; loopback only | Accepted |
 
 Planned: ECS vs EKS.
 
