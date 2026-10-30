@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 16 complete (gated retraining). The dashboard comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 17 complete (dashboard). Security hardening comes next. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -172,9 +172,19 @@ Should the model be retrained, and is a new one safe? `python -m mmrisk.retrain 
 ```
 Every threshold is an assumption. On the generated data the 45-day test window holds about a hundred frauds, so the gates cannot see differences smaller than about 0.03 PR-AUC (measured, ADR-021).
 
+## Dashboard
+A local, read-only Streamlit page over the files the earlier phases write: overview of the prediction store, a review queue with reason codes, the monitoring and drift status, and the model registry with each version's gate results ([guide](docs/dashboard.md), [ADR-022](docs/adr/ADR-022-dashboard.md)).
+```powershell
+.\.venv\Scripts\python -m pip install -e ".[dashboard]"   # once; Streamlit is about 450 MB on Linux
+.\scripts\dev.ps1 dashcheck    # which files were found; no Streamlit needed
+.\scripts\dev.ps1 dashboard    # http://127.0.0.1:8501
+```
+It binds to this computer only (another address needs `--allow-external`; there is no login until Phase 18), masks customer ids by default and turns Streamlit's usage statistics off. How it looks in a browser has not been checked by the assistant.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Retraining guide](docs/retraining.md)
+- [Dashboard guide](docs/dashboard.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
 - [Threat model](docs/threat-model.md)

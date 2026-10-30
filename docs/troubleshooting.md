@@ -203,6 +203,18 @@ Look at the interval printed on the `pr_auc` and `cost` lines. On the generated 
 **`retrain-check` says RETRAIN RECOMMENDED because of drift, but you only ran the demonstration**
 A drift report made with `--scale-amounts` is marked as injected and is ignored by the check (shown as `unknown`). Delete `data\\drift\\report.json` or run `dev.ps1 drift` again for a real report.
 
+**`dashboard run` says streamlit is not installed**
+`.\.venv\Scripts\python -m pip install -e ".[dashboard]"` (about 450 MB on Linux). Then `dashcheck` works with or without it.
+
+**The dashboard tab says "no predictions"**
+Run the simulator (`dev.ps1 simulate`) so `data\predictions` has part files. `dashcheck` lists which files were found. Each tab with a missing source names the command that creates it.
+
+**The dashboard refuses `--host`**
+By design: it has no login and shows transaction details. Use 127.0.0.1 (the default). `--allow-external` removes the check; do that only on a network you trust.
+
+**The dashboard does not show new predictions**
+Nothing refreshes by itself. Press Refresh in the sidebar or reload the browser tab.
+
 **`retrain run` stops at `data_sufficiency`**
 The data has too little fraud in train, validation or test for the (assumed) minimums. Generate more data or lower `--min-train-fraud`, `--min-val-fraud`, `--min-test-fraud` knowingly. Nothing is registered in that case.
 
