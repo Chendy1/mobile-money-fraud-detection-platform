@@ -28,6 +28,8 @@ explain = ["shap>=0.45"]
 tracking = ["mlflow>=2.14"]
 # local scoring API (Phase 11); httpx is for the test client
 api = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "prometheus-client>=0.20"]
+# local dashboard (Phase 17); read-only, runs on this computer only
+dashboard = ["streamlit>=1.40"]
 # the smallest set that can serve a saved model (the container image installs only this)
 serve = [
     "scikit-learn>=1.4", "lightgbm>=4.0", "fastapi>=0.110", "uvicorn>=0.29", "prometheus-client>=0.20",
