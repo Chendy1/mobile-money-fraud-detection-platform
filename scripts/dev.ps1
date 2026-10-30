@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -9,7 +9,7 @@ switch ($Task) {
     "setup" {
         python -m venv .venv
         & $venvPython -m pip install --upgrade pip
-        & $venvPython -m pip install -e ".[dev,eda,ml,explain,tracking,api]"
+        & $venvPython -m pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
     }
     "lint"   { & $venvPython -m ruff check .; & $venvPython -m ruff format --check . }
     "format" { & $venvPython -m ruff check --fix .; & $venvPython -m ruff format . }
@@ -46,6 +46,8 @@ switch ($Task) {
     "regls" { & $venvPython -m mmrisk.registry list }
     "retrain-check" { & $venvPython -m mmrisk.retrain check }
     "retrain" { & $venvPython -m mmrisk.retrain run }
+    "dashboard" { & $venvPython -m mmrisk.dashboard run }
+    "dashcheck" { & $venvPython -m mmrisk.dashboard check }
     "upmon" { docker compose --profile monitoring up --build }
     "predictions" { & $venvPython -m mmrisk.streaming summary }
 }

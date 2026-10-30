@@ -1,7 +1,7 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck
 setup:
-	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api]"
+	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
 lint:
 	ruff check . && ruff format --check .
 format:
@@ -73,3 +73,9 @@ retrain-check:
 
 retrain:
 	python -m mmrisk.retrain run
+
+dashboard:
+	python -m mmrisk.dashboard run
+
+dashcheck:
+	python -m mmrisk.dashboard check
