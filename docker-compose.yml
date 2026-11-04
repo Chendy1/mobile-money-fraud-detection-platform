@@ -20,7 +20,7 @@ services:
       - ./models/advanced:/app/models/advanced:ro
       - ./data/processed:/app/data/processed:ro
     # To replay only part of the history, add flags after the image's own command, for example:
-    # command: ["python", "-m", "mmrisk.api", "serve", "--host", "0.0.0.0", "--allow-external",
+    # command: ["python", "-m", "mmrisk.api", "serve", "--host", "0.0.0.0", "--allow-insecure-external",
     #           "--model-dir", "/app/models/advanced", "--lake", "/app/data/processed",
     #           "--history-until", "2025-12-01"]
     read_only: true

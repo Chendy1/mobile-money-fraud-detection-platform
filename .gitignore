@@ -28,6 +28,9 @@ data/predictions_*/
 data/monitoring/
 data/drift/
 data/retrain/
+data/security/
+api_keys.json
+dashboard.hash
 !data/**/.gitkeep
 *.parquet
 *.duckdb

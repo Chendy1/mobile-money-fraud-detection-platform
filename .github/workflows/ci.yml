@@ -22,8 +22,24 @@ jobs:
         run: |
           ruff check .
           ruff format --check .
+      - name: Secret scan
+        run: python -m mmrisk.security scan
       - name: Test
         run: pytest --cov=src --cov-report=term-missing
+
+  dependency-audit:
+    # Reports known vulnerabilities in what the project installs. It does not fail the build:
+    # most findings are in transitive packages the project cannot fix on its own (see
+    # docs/security.md). Read the log.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[serve,dashboard,tracking]" pip-audit
+      - run: pip-audit --skip-editable
 
   docker-build:
     # Builds the API image (nothing is pushed) and checks what the unit tests cannot.

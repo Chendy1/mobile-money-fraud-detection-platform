@@ -106,7 +106,7 @@ def test_the_command_is_a_valid_serve_command_for_the_container(docker):
     args = cmd_args(docker)
     assert args[:3] == ["python", "-m", "mmrisk.api"]
     parsed = build_parser().parse_args(args[3:])  # fails if a flag was renamed or removed
-    assert parsed.cmd == "serve" and parsed.host == "0.0.0.0" and parsed.allow_external
+    assert parsed.cmd == "serve" and parsed.host == "0.0.0.0" and parsed.allow_insecure_external
     assert str(parsed.model_dir).replace("\\", "/") == "/app/models/advanced"
     assert str(parsed.lake).replace("\\", "/") == "/app/data/processed"
     assert parsed.port == 8000
