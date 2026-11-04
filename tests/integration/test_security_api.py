@@ -216,11 +216,37 @@ def started(monkeypatch):
 
 def make_cert(tmp_path):
     cert, key = tmp_path / "c.pem", tmp_path / "k.pem"
-    done = subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
-                           "-subj", "/CN=localhost", "-keyout", str(key), "-out", str(cert)],
-                          capture_output=True)  # fmt: skip
+    try:
+        import datetime as dt
+
+        from cryptography import x509
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import rsa
+        from cryptography.x509.oid import NameOID
+
+        private = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "localhost")])
+        now = dt.datetime.now(dt.UTC)
+        built = (x509.CertificateBuilder().subject_name(name).issuer_name(name)
+                 .public_key(private.public_key()).serial_number(x509.random_serial_number())
+                 .not_valid_before(now - dt.timedelta(minutes=1))
+                 .not_valid_after(now + dt.timedelta(days=1))
+                 .sign(private, hashes.SHA256()))  # fmt: skip
+        cert.write_bytes(built.public_bytes(serialization.Encoding.PEM))
+        key.write_bytes(private.private_bytes(serialization.Encoding.PEM,
+                        serialization.PrivateFormat.TraditionalOpenSSL,
+                        serialization.NoEncryption()))  # fmt: skip
+        return cert, key
+    except ImportError:
+        pass
+    try:
+        command = ["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1"]
+        command += ["-subj", "/CN=localhost", "-keyout", str(key), "-out", str(cert)]
+        done = subprocess.run(command, capture_output=True)
+    except OSError:
+        pytest.skip("neither the cryptography package nor openssl is available")
     if done.returncode:
-        pytest.skip("openssl is not available")
+        pytest.skip("openssl could not make a certificate")
     return cert, key
 
 

@@ -249,6 +249,18 @@ def test_the_scanner_flags_files_that_must_not_be_committed(tmp_path):
     assert {f.path for f in scan(root)} == {".env", "x/server.pem", "api_keys.json"}
 
 
+def test_a_folder_inside_another_repository_is_not_hidden_by_that_repos_ignore_rules(tmp_path):
+    import shutil
+    import subprocess as sp
+
+    if shutil.which("git") is None:
+        pytest.skip("git is not installed")
+    sp.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitignore").write_text(".env\n*.pem\n")
+    inner = _git_free(tmp_path / "inner", {".env": "A=1", "s.pem": "x"})
+    assert {f.path for f in scan(inner)} == {".env", "s.pem"}  # the outer repo ignores both
+
+
 def test_the_scanner_ignores_placeholders_markers_and_generated_folders(tmp_path):
     root = _git_free(tmp_path, {
         "a.py": 'password = "changeme-changeme"\ntoken = os.environ["T"]  \n'

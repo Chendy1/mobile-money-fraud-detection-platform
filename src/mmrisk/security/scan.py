@@ -2,8 +2,9 @@
 
 It looks for private key blocks, cloud and Git hosting tokens, assignments of long literal values
 to names like password or api_key, and files that should never be committed (.env, *.pem, key and
-state files). It uses `git ls-files` when it can, so ignored files (data, models, .venv) are not
-scanned, and otherwise walks the folder skipping the usual generated ones.
+state files). It uses `git ls-files` when the folder is the top of a repository, so ignored
+files (data, models, .venv) are not scanned; in any other folder (including one inside another
+repository, whose ignore rules must not hide files) it walks the folder, skipping generated ones.
 
 It is not a replacement for a dedicated scanner: it has no entropy checks and no history scan (a
 secret committed and later deleted is still in Git's history). A line containing `nosecret` is
@@ -54,6 +55,11 @@ class Finding:
 
 def _files(root: Path) -> list[Path]:
     try:
+        found = subprocess.run(["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+                               capture_output=True, check=True)  # fmt: skip
+        top = found.stdout.decode("utf-8", "replace").strip()
+        if Path(top).resolve() != root.resolve():
+            raise OSError("not the top of a repository")  # a folder inside some other repo
         out = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--cached", "--others",
                               "--exclude-standard"], capture_output=True, check=True)  # fmt: skip
         names = [n for n in out.stdout.decode("utf-8", "replace").split("\0") if n]
