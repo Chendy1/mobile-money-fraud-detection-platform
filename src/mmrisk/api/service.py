@@ -68,7 +68,10 @@ def load_model(model_dir: Path) -> RiskModel:
     path = Path(model_dir) / BUNDLE_FILE
     if not path.exists():
         raise ModelLoadError(f"no model at {path}; run the advanced step or the pipeline first")
-    model = RiskModel.load(Path(model_dir))
+    try:
+        model = RiskModel.load(Path(model_dir))
+    except ValueError as exc:  # UnsafePickleError: a file that refers to something not allowed
+        raise ModelLoadError(str(exc)) from None
     if model.feature_version != FEATURE_VERSION:
         raise ModelLoadError(
             f"model was built for feature version {model.feature_version}, "

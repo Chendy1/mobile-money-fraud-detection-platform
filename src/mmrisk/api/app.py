@@ -1,7 +1,8 @@
 """The HTTP layer: validation, error shapes, request ids and size limits around `ScoringService`.
 
-Local use only. There is no authentication and no TLS here; both belong to the security phase.
-The service binds to the loopback address unless told otherwise (see the CLI).
+Local use by default: no authentication unless a `Security` object is given (API keys, rate limits
+and an audit log, see `mmrisk.security`), and TLS is the server's job (see the CLI options). The
+service binds to the loopback address unless told otherwise.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from mmrisk.api.service import (
     UnknownCustomerError,
 )
 from mmrisk.monitoring.metrics import METRICS_PATH, ApiMetrics, MetricsMiddleware
+from mmrisk.security.apiauth import AuthMiddleware, Security
 
 log = logging.getLogger("mmrisk.api")
 
@@ -85,11 +87,17 @@ class _LimitBody:
         return await self.app(scope, replayed, send)
 
 
-def create_app(service: ScoringService | None, docs: bool = True, metrics: bool = True) -> FastAPI:
+def create_app(
+    service: ScoringService | None,
+    docs: bool = True,
+    metrics: bool = True,
+    security: Security | None = None,
+) -> FastAPI:
+    docs = docs and security is None  # the schema pages would need a key a browser cannot send
     app = FastAPI(
         title="Mobile money transaction risk scoring (synthetic data only)",
         version="0.1.0",
-        description="Local simulation. Not affiliated with Safaricom or M-Pesa. No authentication.",
+        description="Local simulation. Not affiliated with Safaricom or M-Pesa.",
         docs_url="/docs" if docs else None,
         redoc_url=None,
         openapi_url="/openapi.json" if docs else None,
@@ -114,6 +122,8 @@ def create_app(service: ScoringService | None, docs: bool = True, metrics: bool 
         return response
 
     app.add_middleware(_LimitBody, limit=MAX_BODY_BYTES)
+    if security is not None:  # inside the metrics middleware, so refusals are counted too
+        app.add_middleware(AuthMiddleware, security=security)
     collector = ApiMetrics(lambda: app.state.service) if metrics else None
     app.state.metrics = collector
     if collector is not None:

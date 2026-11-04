@@ -87,5 +87,12 @@ class RiskModel:
         return directory / BUNDLE_FILE
 
     @staticmethod
-    def load(directory: Path) -> RiskModel:
-        return joblib.load(Path(directory) / BUNDLE_FILE)
+    def load(directory: Path, safe: bool = True) -> RiskModel:
+        """Load a saved bundle. By default only the classes this project saves may be rebuilt
+        (see `mmrisk.security.safeload`); `safe=False` is the plain, unchecked joblib load."""
+        path = Path(directory) / BUNDLE_FILE
+        if not safe:
+            return joblib.load(path)
+        from mmrisk.security.safeload import safe_load
+
+        return safe_load(path)

@@ -225,9 +225,9 @@ def test_serve_refuses_a_public_address_without_the_flag(model_dir, env, capsys,
     started = []
     monkeypatch.setattr(uvicorn, "run", lambda *a, **k: started.append(1))
     code = cli(["serve", "--model-dir", str(model_dir), "--lake", str(env[1]), "--host", "0.0.0.0"])
-    assert code == 2 and "no authentication" in capsys.readouterr().err and not started
+    assert code == 2 and "refusing to listen" in capsys.readouterr().err and not started
     ok = cli(["serve", "--model-dir", str(model_dir), "--lake", str(env[1]), "--host", "0.0.0.0",
-              "--allow-external", "--no-history"])  # fmt: skip
+              "--allow-insecure-external", "--no-history"])  # fmt: skip
     assert ok == 0 and started and "WARNING" in capsys.readouterr().out
 
 

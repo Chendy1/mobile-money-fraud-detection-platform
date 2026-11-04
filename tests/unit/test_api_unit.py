@@ -309,7 +309,7 @@ def test_error_codes(client):
 
 
 def test_an_invalid_request_is_not_echoed_back(client):
-    secret = "SECRET-VALUE-123"
+    secret = "SECRET-VALUE-123"  # nosecret: test value
     r = post(client, {**wire(txn()), "channel": secret, "surprise": secret})
     assert r.status_code == 422
     assert secret not in r.text and "channel" in r.text and "surprise" in r.text

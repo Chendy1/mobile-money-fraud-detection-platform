@@ -17,6 +17,52 @@ from mmrisk.api.service import ScoringService, ServiceError, load_model
 LOOPBACK = ("127.0.0.1", "localhost", "::1")
 
 
+class SecurityOptionError(ValueError):
+    """A combination of security options that is refused (the message says what to change)."""
+
+
+def _security(args):
+    """(Security or None, TLS on?) from the command line, or raise SecurityOptionError."""
+    from mmrisk.security.apiauth import Security
+    from mmrisk.security.audit import AuditLog
+    from mmrisk.security.keys import KeyFileError, KeyStore
+    from mmrisk.security.ratelimit import RateLimitError, TokenBucket
+
+    if bool(args.tls_cert) != bool(args.tls_key):
+        raise SecurityOptionError("--tls-cert and --tls-key go together")
+    tls = bool(args.tls_cert)
+    for path in (args.tls_cert, args.tls_key):
+        if path and not Path(path).is_file():
+            raise SecurityOptionError(f"{path} does not exist")
+    if args.host not in LOOPBACK and not args.allow_insecure_external:
+        missing = [m for m, absent in (("--auth-keys", not args.auth_keys), ("--tls-cert and "
+                   "--tls-key", not tls)) if absent]  # fmt: skip
+        if not args.allow_external or missing:
+            need = " and ".join(missing) or "--allow-external"
+            raise SecurityOptionError(
+                f"refusing to listen on {args.host}: add {need}"
+                + (" and --allow-external" if missing and not args.allow_external else "")
+                + ", or use 127.0.0.1. (--allow-insecure-external overrides this; the API then "
+                "has no protection.)"
+            )
+    security = None
+    if args.auth_keys:
+        store = KeyStore(args.auth_keys)
+        try:
+            if store.active_count() == 0:
+                raise SecurityOptionError(
+                    f"no active API key in {args.auth_keys}; make one with: "
+                    "python -m mmrisk.security keys create --name <name> --role score"
+                )
+            bucket = TokenBucket(args.rate_per_minute, args.rate_burst)
+        except (KeyFileError, RateLimitError) as exc:
+            raise SecurityOptionError(str(exc)) from None
+        audit = AuditLog(args.audit_log)
+        security = Security(store, audit, bucket)
+        audit.record("startup", detail=f"auth on, tls {'on' if tls else 'off'}, host {args.host}")
+    return security, tls
+
+
 def _cmd_serve(args) -> int:
     try:
         import uvicorn
@@ -25,12 +71,10 @@ def _cmd_serve(args) -> int:
     except ImportError:
         print('error: the API needs its extra: pip install -e ".[api]"', file=sys.stderr)
         return 2
-    if args.host not in LOOPBACK and not args.allow_external:
-        print(
-            f"error: refusing to listen on {args.host}: the API has no authentication or TLS. "
-            "Use 127.0.0.1, or pass --allow-external if you accept that.",
-            file=sys.stderr,
-        )
+    try:
+        security, tls = _security(args)
+    except SecurityOptionError as exc:
+        print(f"error: {exc}", file=sys.stderr)
         return 2
     try:
         until = datetime.fromisoformat(args.history_until) if args.history_until else None
@@ -43,11 +87,19 @@ def _cmd_serve(args) -> int:
         f"model {info['scorer']} (features {info['feature_version']}), {info['customers']} "
         f"customers, {info['history_transactions']} past transactions replayed"
     )
-    if args.host not in LOOPBACK:
-        print("WARNING: listening on a non-local address with no authentication or TLS.")
-    print(f"listening on http://{args.host}:{args.port} (docs at /docs unless --no-docs)")
-    app = create_app(service, docs=not args.no_docs)
-    uvicorn.run(app, host=args.host, port=args.port, log_level=args.log_level)
+    if args.host not in LOOPBACK and (security is None or not tls):
+        missing = " and ".join(
+            m for m, absent in (("API keys", security is None), ("TLS", not tls)) if absent
+        )
+        print(f"WARNING: listening on a non-local address without {missing}.")
+    scheme = "https" if tls else "http"
+    docs = (
+        "docs at /docs unless --no-docs" if security is None else "docs are off: keys are required"
+    )
+    print(f"listening on {scheme}://{args.host}:{args.port} ({docs})")
+    app = create_app(service, docs=not args.no_docs, security=security)
+    ssl = {"ssl_certfile": str(args.tls_cert), "ssl_keyfile": str(args.tls_key)} if tls else {}
+    uvicorn.run(app, host=args.host, port=args.port, log_level=args.log_level, **ssl)
     return 0
 
 
@@ -128,8 +180,24 @@ def build_parser() -> argparse.ArgumentParser:
             s.add_argument(
                 "--allow-external",
                 action="store_true",
-                help="listen on a non-local address (no authentication or TLS!)",
+                help="listen on a non-local address (needs --auth-keys, --tls-cert, --tls-key)",
             )
+            s.add_argument(
+                "--allow-insecure-external",
+                action="store_true",
+                help="listen on a non-local address with no keys or TLS (the container does)",
+            )
+            s.add_argument(
+                "--auth-keys",
+                type=Path,
+                default=os.environ.get("MMRISK_API_KEYS_FILE") or None,
+                help="require API keys from this file (or MMRISK_API_KEYS_FILE); turns /docs off",
+            )
+            s.add_argument("--audit-log", type=Path, default=Path("data/security/audit.jsonl"))
+            s.add_argument("--rate-per-minute", type=float, default=600.0)
+            s.add_argument("--rate-burst", type=int, default=50)
+            s.add_argument("--tls-cert", type=Path, default=None, help="PEM certificate file")
+            s.add_argument("--tls-key", type=Path, default=None, help="PEM private key file")
             s.add_argument(
                 "--history-until",
                 default=os.environ.get("MMRISK_HISTORY_UNTIL") or None,
