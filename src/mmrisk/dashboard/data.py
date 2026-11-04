@@ -29,6 +29,19 @@ HISTORY_ROWS = 20
 DRIFT_TOP = 10
 
 
+# Environment variables through which the launcher hands paths to the page (a Streamlit page runs
+# as a script and cannot take arguments). Kept here so the launcher never has to import the page.
+ENV_VARS = {
+    "store": "MMRISK_DASH_STORE",
+    "monitoring_baseline": "MMRISK_DASH_BASELINE",
+    "drift_report": "MMRISK_DASH_DRIFT",
+    "registry": "MMRISK_DASH_REGISTRY",
+    "retrain_dir": "MMRISK_DASH_RETRAIN",
+}
+
+HASH_VAR = "MMRISK_DASH_PASSWORD_HASH"  # a scrypt hash, never the password
+
+
 @dataclass(frozen=True)
 class Sources:
     store: Path = Path("data/predictions")
@@ -387,7 +400,8 @@ def source_status(src: Sources) -> list[dict]:
 
 
 __all__ = [
-    "ACTIONS", "BROKEN", "MISSING", "OK", "WINDOWS", "Loaded", "ModelsView", "Sources",
+    "ENV_VARS", "HASH_VAR", "ACTIONS", "BROKEN", "MISSING", "OK", "WINDOWS", "Loaded",
+    "ModelsView", "Sources",
     "drift_summary", "gates_table", "health", "load_store", "mask_id", "models_view",
     "overview", "parse_reasons", "probability_histogram", "retrain_summary", "review_queue",
     "source_status", "store_signature", "transaction_detail",

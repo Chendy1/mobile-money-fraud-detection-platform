@@ -28,12 +28,28 @@ def _sources(args) -> D.Sources:
     return D.Sources(args.store, args.baseline, args.drift_report, args.registry, args.retrain_dir)
 
 
-def _env(src: D.Sources) -> dict:
-    from mmrisk.dashboard.app import ENV
-
+def _env(src: D.Sources, password_hash: str | None = None) -> dict:
     env = dict(os.environ)
-    env.update({ENV[k]: str(getattr(src, k)) for k in ENV})
+    env.pop(D.HASH_VAR, None)  # never inherit a hash the person did not pass
+    env.update({D.ENV_VARS[k]: str(getattr(src, k)) for k in D.ENV_VARS})
+    if password_hash:
+        env[D.HASH_VAR] = password_hash
     return env
+
+
+def _password_hash(args) -> str | None:
+    if not args.password_file:
+        return None
+    from mmrisk.security import passwords
+
+    try:
+        stored = args.password_file.read_text(encoding="utf-8").strip()
+        passwords.parse(stored)
+    except OSError as exc:
+        raise UsageError(f"cannot read --password-file: {exc.strerror}") from None
+    except passwords.PasswordError as exc:
+        raise UsageError(f"--password-file: {exc}") from None
+    return stored
 
 
 def _check(args) -> int:
@@ -60,10 +76,13 @@ def _check(args) -> int:
 
 
 def _run(args) -> int:
-    if args.host not in LOOPBACK and not args.allow_external:
+    stored = _password_hash(args)
+    if args.host not in LOOPBACK and not (args.allow_external and stored):
         raise UsageError(
-            f"--host {args.host} would expose the dashboard to the network. It has no login "
-            "(Phase 18) and shows transaction details. Use --allow-external only if you accept it."
+            f"--host {args.host} would expose the dashboard to the network. It shows transaction "
+            "details. Add --password-file (made by `python -m mmrisk.security dash-password`) "
+            "and --allow-external. The dashboard does not do TLS: put it behind a TLS proxy "
+            "or a tunnel before leaving your own network."
         )
     if not 1 <= args.port <= 65535:
         raise UsageError("--port must be between 1 and 65535")
@@ -78,7 +97,11 @@ def _run(args) -> int:
         "--server.headless", "true" if args.no_browser else "false",
     ]  # fmt: skip
     print(f"dashboard at http://{args.host}:{args.port} (Ctrl+C stops it)")
-    return subprocess.call(cmd, env=_env(_sources(args)))
+    try:
+        return subprocess.call(cmd, env=_env(_sources(args), stored))
+    except KeyboardInterrupt:  # Ctrl+C is the documented way to stop it
+        print("dashboard stopped")
+        return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -95,6 +118,8 @@ def build_parser() -> argparse.ArgumentParser:
             s.add_argument("--host", default="127.0.0.1")
             s.add_argument("--port", type=int, default=8501)
             s.add_argument("--allow-external", action="store_true")
+            s.add_argument("--password-file", type=Path, default=None,
+                           help="hash from `mmrisk.security dash-password`")  # fmt: skip
             s.add_argument("--no-browser", action="store_true", help="do not open a browser tab")
         else:
             s.add_argument("--window", default="1d", choices=D.WINDOWS)

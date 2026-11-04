@@ -17,19 +17,14 @@ import polars as pl
 import streamlit as st
 
 from mmrisk.dashboard import data as D
-
-ENV = {
-    "store": "MMRISK_DASH_STORE",
-    "monitoring_baseline": "MMRISK_DASH_BASELINE",
-    "drift_report": "MMRISK_DASH_DRIFT",
-    "registry": "MMRISK_DASH_REGISTRY",
-    "retrain_dir": "MMRISK_DASH_RETRAIN",
-}
+from mmrisk.dashboard.gate import Gate
 
 
 def sources_from_env() -> D.Sources:
     base = D.Sources()
-    return D.Sources(**{k: Path(os.environ.get(v, str(getattr(base, k)))) for k, v in ENV.items()})
+    return D.Sources(
+        **{k: Path(os.environ.get(v, str(getattr(base, k)))) for k, v in D.ENV_VARS.items()}
+    )
 
 
 @st.cache_data(show_spinner=False)
@@ -177,8 +172,32 @@ def models_tab(src: D.Sources) -> None:
         st.write(f"Last run: candidate {run['candidate']} {outcome}")
 
 
+@st.cache_resource
+def _gate(stored: str) -> Gate:
+    return Gate(stored)
+
+
+def _logged_in() -> bool:
+    stored = os.environ.get(D.HASH_VAR)
+    if not stored:
+        return True  # no --password-file: loopback only, enforced by the launcher
+    if st.session_state.get("authed"):
+        return True
+    with st.form("login"):
+        password = st.text_input("Password", type="password")
+        if st.form_submit_button("Sign in"):
+            ok, message = _gate(stored).attempt(password)
+            if ok:
+                st.session_state["authed"] = True
+                st.rerun()
+            st.error(message)
+    return False
+
+
 def main() -> None:
     st.set_page_config(page_title="Mobile money risk (synthetic)", layout="wide")
+    if not _logged_in():
+        st.stop()
     st.title("Mobile money transaction risk")
     st.caption("Synthetic data only. Read-only view of the files the pipeline writes.")
     src = sources_from_env()
