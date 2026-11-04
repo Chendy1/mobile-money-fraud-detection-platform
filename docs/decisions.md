@@ -33,5 +33,8 @@
 
 Planned: ECS vs EKS.
 
+## Security (Phase 18, ADR-023)
+Keys with roles for the API; external binding needs keys, TLS and a flag; allow-list unpickling (not a sandbox); shared-password dashboard login; own secret scanner plus non-blocking `pip-audit`. All limits ASSUMED.
+
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.

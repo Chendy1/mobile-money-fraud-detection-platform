@@ -179,7 +179,10 @@ A local, read-only Streamlit page over the files the earlier phases write: overv
 .\scripts\dev.ps1 dashcheck    # which files were found; no Streamlit needed
 .\scripts\dev.ps1 dashboard    # http://127.0.0.1:8501
 ```
-It binds to this computer only (another address needs `--allow-external`; there is no login until Phase 18), masks customer ids by default and turns Streamlit's usage statistics off. How it looks in a browser has not been checked by the assistant.
+It binds to this computer only (another address needs `--password-file` and `--allow-external`; the login is optional and there is no TLS, see [docs/security.md](docs/security.md)), masks customer ids by default and turns Streamlit's usage statistics off. How it looks in a browser has not been checked by the assistant.
+
+## Security
+API keys with roles, rate limits, an audit log, optional TLS, a dashboard login, a checked model loader and a secret scan, all described with their limits in [docs/security.md](docs/security.md). Synthetic data only; not a security audit.
 
 ## Documentation
 - [Architecture](docs/architecture.md)
@@ -187,6 +190,7 @@ It binds to this computer only (another address needs `--allow-external`; there 
 - [Dashboard guide](docs/dashboard.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
+- [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)
 - [EDA report](docs/eda-report.md)

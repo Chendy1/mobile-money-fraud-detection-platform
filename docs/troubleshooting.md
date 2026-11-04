@@ -129,7 +129,16 @@ The transaction is not later than the customer's last one in the replayed histor
 Use an id from `data\processed` cleaned customers (for example `C000001`).
 
 **`error: refusing to listen on ...`**
-The API has no authentication, so only 127.0.0.1 is allowed by default. `--allow-external` overrides that; do not use it on a shared network.
+Since Phase 18 a non-loopback host needs `--auth-keys`, `--tls-cert` with `--tls-key`, and `--allow-external`; the message names what is missing. Make keys with `python -m mmrisk.security keys create --name ops --role score`. `--allow-insecure-external` removes every check; do not use it on a shared network.
+
+**401 `unauthorized` or 429 `too_many_failures`**
+Send `Authorization: Bearer <key>` (not in the URL). Ten bad keys from one address block it for a minute; wait for `Retry-After`. 403 means the key's role does not allow that route; 429 `rate_limited` means that key is over its limit.
+
+**`unsafe` or "not on the allow-list" when loading a model**
+The file refers to something this project does not save. Rebuild it with `dev.ps1 advanced`, or if you made it with a different library version and trust it, `RiskModel.load(path, safe=False)`.
+
+**`dev.ps1 secscan` reports a finding**
+Remove or rotate the secret. A fake value in a test can carry the comment `nosecret`. A committed secret stays in Git history; rotate it.
 
 **A `StarletteDeprecationWarning` about httpx during tests**
 Harmless: newer Starlette prefers `httpx2` for its test client. The tests work with either.
@@ -210,7 +219,7 @@ A drift report made with `--scale-amounts` is marked as injected and is ignored 
 Run the simulator (`dev.ps1 simulate`) so `data\predictions` has part files. `dashcheck` lists which files were found. Each tab with a missing source names the command that creates it.
 
 **The dashboard refuses `--host`**
-By design: it has no login and shows transaction details. Use 127.0.0.1 (the default). `--allow-external` removes the check; do that only on a network you trust.
+By design: it shows transaction details. Use 127.0.0.1 (the default), or make a password (`python -m mmrisk.security dash-password`) and pass `--password-file` with `--allow-external`. It still has no TLS.
 
 **The dashboard does not show new predictions**
 Nothing refreshes by itself. Press Refresh in the sidebar or reload the browser tab.

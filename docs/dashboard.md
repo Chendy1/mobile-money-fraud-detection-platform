@@ -8,7 +8,7 @@ Question answered: what is the system doing right now, which transactions need a
 .\scripts\dev.ps1 dashcheck      # which files were found, without starting anything
 .\scripts\dev.ps1 dashboard      # http://127.0.0.1:8501
 ```
-Stop it with Ctrl+C. Options: `--store`, `--baseline`, `--drift-report`, `--registry`, `--retrain-dir`, `--port`, `--no-browser`. `--host` other than 127.0.0.1, localhost or ::1 is refused unless you add `--allow-external`; there is no login.
+Stop it with Ctrl+C. Options: `--store`, `--baseline`, `--drift-report`, `--registry`, `--retrain-dir`, `--port`, `--no-browser`. `--password-file` asks for a login (see [security.md](security.md)). `--host` other than 127.0.0.1, localhost or ::1 is refused unless you add both `--password-file` and `--allow-external`; there is no TLS.
 
 | Tab | Shows | Needs |
 |---|---|---|
