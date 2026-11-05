@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -48,6 +48,8 @@ switch ($Task) {
     "retrain" { & $venvPython -m mmrisk.retrain run }
     "dashboard" { & $venvPython -m mmrisk.dashboard run }
     "dashcheck" { & $venvPython -m mmrisk.dashboard check }
+    "loadtest" { & $venvPython -m mmrisk.loadtest bench --profile step --rates 10,25,50,75,100,125,150 --step-seconds 8 --last-days 14 }
+    "inproc" { & $venvPython -m mmrisk.loadtest inproc }
     "secscan" { & $venvPython -m mmrisk.security scan }
     "audit" { & $venvPython -m pip install pip-audit; & $venvPython -m pip_audit --skip-editable }
     "upmon" { docker compose --profile monitoring up --build }

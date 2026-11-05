@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
 lint:
@@ -85,3 +85,9 @@ secscan:
 
 audit:
 	pip install pip-audit && pip-audit --skip-editable
+
+loadtest:
+	python -m mmrisk.loadtest bench --profile step --rates 10,25,50,75,100,125,150 --step-seconds 8 --last-days 14
+
+inproc:
+	python -m mmrisk.loadtest inproc
