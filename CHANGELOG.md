@@ -3,6 +3,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 
 ## [Unreleased]
 
+- Phase 19: load testing (`mmrisk.loadtest`, ADR-024, `docs/load-testing.md`). `python -m mmrisk.loadtest bench|run|inproc|show`; profiles constant, step, ramp, spike; open loop with latency from the intended start; one worker per customer so scoring is not tested through 409s; reports as JSON and markdown with ASSUMED targets and a knee; cross-check against the API's own counter; loopback only unless `--allow-external`. `dev.ps1 loadtest | inproc`. Sandbox numbers are in the docs, labelled as such.
+
 - Fix (Phase 18): the secret scanner now uses `git ls-files` only at the top of a repository, so a folder inside another repository (a pytest temp dir under a home folder that is itself a repo) is no longer hidden by that repo's ignore rules; the TLS tests make their certificate with the `cryptography` package, then openssl, and skip when neither exists.
 - Phase 18: security hardening (`mmrisk.security`, ADR-023, `docs/security.md`). API: Bearer keys with roles (`keys create|list|revoke`), per-key rate limit, failure block, audit log without bodies or ids, optional TLS, refusal to bind externally without keys + TLS + `--allow-external` (`--allow-insecure-external` for the container). Dashboard: optional scrypt password login (`--password-file`). Model loading uses an allow-list unpickler (not a sandbox). Secret scanner (also in CI and tests) and a non-blocking `pip-audit` CI job. `dev.ps1 secscan | audit`. Breaking: `--allow-external` alone no longer opens a non-loopback host.
 

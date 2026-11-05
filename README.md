@@ -181,6 +181,9 @@ A local, read-only Streamlit page over the files the earlier phases write: overv
 ```
 It binds to this computer only (another address needs `--password-file` and `--allow-external`; the login is optional and there is no TLS, see [docs/security.md](docs/security.md)), masks customer ids by default and turns Streamlit's usage statistics off. How it looks in a browser has not been checked by the assistant.
 
+## Load testing
+A small open-loop load generator (`python -m mmrisk.loadtest bench`) with step, ramp and spike profiles. In my 2-CPU build sandbox the API kept its (assumed) latency targets up to 100 requests/s; your machine will differ, run `dev.ps1 loadtest`. Details and limits in [docs/load-testing.md](docs/load-testing.md).
+
 ## Security
 API keys with roles, rate limits, an audit log, optional TLS, a dashboard login, a checked model loader and a secret scan, all described with their limits in [docs/security.md](docs/security.md). Synthetic data only; not a security audit.
 
@@ -190,6 +193,7 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 - [Dashboard guide](docs/dashboard.md)
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
+- [Load testing](docs/load-testing.md)
 - [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)

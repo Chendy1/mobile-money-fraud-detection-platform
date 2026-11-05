@@ -247,3 +247,15 @@ Something uses port 8000. Change the first number in `127.0.0.1:8000:8000`, and 
 
 **`error: invalid cost` (exit code 2)**
 A cost cannot be negative and the review effectiveness must be between 0 and 1. See `docs/cost-model.md`.
+
+**`error: the profile needs N transactions and the stream has M` (load test)**
+Each request uses one later transaction. Lower `--rate` or `--seconds`, or widen the stream with `--last-days 14` (the default synthetic lake has about 330 transactions a day).
+
+**`error: the API exited while starting` or "was not ready after 120 s" (`loadtest bench`)**
+The message includes the end of the API's log. Usual causes: no trained model in `models\advanced` (`dev.ps1 advanced`), an empty lake (`dev.ps1 ingest`), or a model built with other library versions.
+
+**Load test report warns about `duplicate` or `409 conflict`**
+`duplicate`: you used `run` twice against the same API; it already saw those transactions. Restart it (with the same `--history-until`) or use `bench`, which starts a fresh one. `409`: transactions reached the API out of order; check that `--from` matches the API's `--history-until`.
+
+**Latency in the report is much larger than `service p95`**
+Requests started late: the API (or the generator) could not keep up, so they queued. Compare `late-start p95`. More `--workers` helps only if the generator was the limit.
