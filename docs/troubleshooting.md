@@ -257,5 +257,8 @@ The message includes the end of the API's log. Usual causes: no trained model in
 **Load test report warns about `duplicate` or `409 conflict`**
 `duplicate`: you used `run` twice against the same API; it already saw those transactions. Restart it (with the same `--history-until`) or use `bench`, which starts a fresh one. `409`: transactions reached the API out of order; check that `--from` matches the API's `--history-until`.
 
+**`error: [WinError 32] ... server.log` at the end of `loadtest bench` (Windows)**
+Fixed in the Phase 19 fix: the API's launcher process was stopped but the server it started kept running and held the log file. Stopping now ends the whole process tree. If you ran an older version, look for leftover servers and stop them: `Get-Process python | Select-Object Id, StartTime, Path` (stop the ones that are not your own with `Stop-Process -Id <id>`).
+
 **Latency in the report is much larger than `service p95`**
 Requests started late: the API (or the generator) could not keep up, so they queued. Compare `late-start p95`. More `--workers` helps only if the generator was the limit.

@@ -463,3 +463,75 @@ def test_running_the_module_works():
     done = subprocess.run([sys.executable, "-m", "mmrisk.loadtest", "--help"],
                           capture_output=True, text=True, timeout=60)  # fmt: skip
     assert done.returncode == 0 and "bench" in done.stdout
+
+
+# ---- stopping the server we started ----
+
+
+def test_stop_process_ends_a_running_process_and_is_safe_on_one_that_already_ended():
+    import subprocess
+    import sys
+    import time
+
+    from mmrisk.loadtest.cli import stop_process
+
+    proc = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+    t0 = time.monotonic()
+    stop_process(proc)
+    assert proc.poll() is not None and time.monotonic() - t0 < 10
+    stop_process(proc)  # already gone: nothing happens, nothing raises
+
+
+def test_on_windows_the_whole_process_tree_is_ended(monkeypatch):
+    """Cannot run Windows here, so the command is checked: /T is what ends the child."""
+    from mmrisk.loadtest import cli
+
+    calls = []
+
+    class Proc:
+        pid = 4321
+
+        def poll(self):
+            return None
+
+        def terminate(self):
+            calls.append("terminate")
+
+        def wait(self, timeout=None):
+            return 0
+
+    monkeypatch.setattr(cli.os, "name", "nt")
+    monkeypatch.setattr(cli.subprocess, "run", lambda cmd, **kw: calls.append(cmd))
+    cli.stop_process(Proc())
+    assert calls == [["taskkill", "/PID", "4321", "/T", "/F"]]  # not a bare terminate()
+    monkeypatch.setattr(cli.os, "name", "posix")
+    calls.clear()
+    cli.stop_process(Proc())
+    assert calls == ["terminate"]
+
+
+def test_the_bench_folder_is_made_so_that_a_failed_cleanup_cannot_change_the_result(
+    monkeypatch, tmp_path
+):
+    """The Windows failure: the report was written, then removing the folder raised and the run
+    was reported as an error. The folder must be made with ignore_cleanup_errors."""
+    import tempfile
+    from datetime import datetime
+
+    from mmrisk.loadtest import cli
+
+    seen = {}
+    real = tempfile.TemporaryDirectory
+
+    def spy(*args, **kwargs):
+        seen.update(kwargs)
+        return real(*args, **kwargs)
+
+    def no_server(*args, **kwargs):
+        raise OSError("no server in this test")
+
+    monkeypatch.setattr(cli.tempfile, "TemporaryDirectory", spy)
+    monkeypatch.setattr(cli, "_stream", lambda a: (datetime(2025, 1, 1), []))
+    monkeypatch.setattr(cli.subprocess, "Popen", no_server)
+    assert lt_main(["bench", "--lake", str(tmp_path)]) == 2
+    assert seen.get("ignore_cleanup_errors") is True

@@ -44,6 +44,21 @@ Machine: the build sandbox, **2 CPUs**, Linux, Python 3.13, the newest library s
 - In-process scoring (`inproc`, 500 transactions, no HTTP): mean 4.9 ms, p95 7.4 ms, p99 10.5 ms. The service holds one lock, so scoring is one at a time: about 200 per second is the most one process could do even with free HTTP.
 - The observed limit (about 100/s) is about half that ceiling, and close to the 123/s over HTTP that Phase 13 measured in the same sandbox (ADR-018). Why was **not isolated**: HTTP parsing, validation, metrics, JSON and the load generator all ran on the same two CPUs. Splitting them (generator on another machine) and profiling the server would tell. TO VERIFY.
 
+## A second machine (Windows, 4 CPUs, 2026-11-05)
+One run of `dev.ps1 loadtest` on the project owner's Windows machine (4 CPUs, Python 3.12, no keys, same profile). The sandbox figures above do **not** carry over:
+
+| offered/s | achieved/s | p50 / p95 / p99 ms | late-start p95 ms | meets |
+|---:|---:|---|---:|:--:|
+| 10 | 10.0 | 18.6 / 23.9 / 52.4 | 0.9 | yes |
+| 25 | 25.0 | 19.4 / 27.7 / 36.6 | 1.0 | yes |
+| 50 | 49.7 | 136 / 341 / 521 | 240 | NO |
+| 75 | 43.0 | 2392 / 4588 / 5539 | 4434 | NO |
+| 100 | 37.9 | 7529 / 11557 / 12511 | 11418 | NO |
+| 125 | 29.2 | 16757 / 24017 / 25333 | 23865 | NO |
+| 150 | 26.6 | 29386 / 37359 / 37763 | 37310 | NO |
+
+Targets held up to 25 requests/s there. In-process scoring on that machine: mean 14.7 ms, p95 21.2 ms (about 68 per second one at a time), three times the sandbox's 4.9 ms; the observed limit is again roughly 0.6 of the in-process ceiling. Why the machine is slower per score was not investigated (CPU, Python and library versions, antivirus and background load are all untested explanations). Achieved rate falls as the backlog grows (49.7, 43, 38, 29, 27): the longer the queue, the less the server finishes per second in that window; here too the API answered every request (4,280 of 4,280) and its own count matched the client's. Both numbers are one run and say where *a* limit is on *a* machine.
+
 ## What this does not show
 Other machines (your laptop will differ); the effect of customer history length (each score recomputes over that customer's history, so latency should grow as histories grow: the stream here is a week of a year-long lake and was not stretched); long runs (nothing longer than about a minute was run: memory growth, the 10,000-entry duplicate cache and log growth over hours are unmeasured); several server processes (the service state is in one process, so more workers would need shared state: not built); the container (the Docker image was not loaded); a network between generator and server; real traffic shapes (arrivals are even or Poisson; the stream's customers and amounts are the synthetic ones); failure of the model file or disk under load.
 

@@ -179,11 +179,33 @@ def _wait_ready(url: str, proc: subprocess.Popen, log: Path) -> None:
     raise LoadTestError(f"the API was not ready after {BOOT_SECONDS} s")
 
 
+def stop_process(proc: subprocess.Popen) -> None:
+    """Stop a server we started, and everything it started.
+
+    On Windows a virtual environment's python.exe is a small launcher that starts the real
+    interpreter as a child: ending only the launcher leaves the server running, still holding its
+    port and its log file. taskkill /T ends the whole tree.
+    """
+    if proc.poll() is None:
+        if os.name == "nt":
+            subprocess.run(  # noqa: S603
+                ["taskkill", "/PID", str(proc.pid), "/T", "/F"], capture_output=True, check=False
+            )
+        else:
+            proc.terminate()
+    try:
+        proc.wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait(timeout=15)
+
+
 def _bench(args) -> int:
     start, stream = _stream(args)
     port = _free_port()
     url = f"http://127.0.0.1:{port}"
-    with tempfile.TemporaryDirectory(prefix="mmrisk-bench-") as tmp:
+    # a folder that cannot be removed (an antivirus scan, a late handle) must not change the result
+    with tempfile.TemporaryDirectory(prefix="mmrisk-bench-", ignore_cleanup_errors=True) as tmp:
         tmp = Path(tmp)
         cmd = [sys.executable, "-m", "mmrisk.api", "serve", "--model-dir", str(args.model_dir),
                "--lake", str(args.lake), "--port", str(port), "--history-until", start.isoformat(),
@@ -206,11 +228,7 @@ def _bench(args) -> int:
                     extra["rate_limit_per_minute"] = args.rate_per_minute
                 return _execute(args, url, key, stream, "bench", extra)
             finally:
-                proc.terminate()
-                try:
-                    proc.wait(timeout=15)
-                except subprocess.TimeoutExpired:
-                    proc.kill()
+                stop_process(proc)
 
 
 def _run(args) -> int:

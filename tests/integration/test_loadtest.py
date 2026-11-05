@@ -99,8 +99,7 @@ def test_a_second_run_against_the_same_server_is_flagged_as_duplicates(
             assert lt_main([*argv, "--name", "first"]) == 0
             assert lt_main([*argv, "--name", "second"]) == 0
         finally:
-            proc.terminate()
-            proc.wait(timeout=15)
+            lt.stop_process(proc)
     first = json.loads((tmp_path / "first.json").read_text())
     second = json.loads((tmp_path / "second.json").read_text())
     assert first["warnings"] == [] and first["segments"][0]["duplicates"] == 0
