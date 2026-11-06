@@ -8,6 +8,7 @@ container or a local server: `python -m mmrisk.api smoke --url http://127.0.0.1:
 from __future__ import annotations
 
 import json
+import ssl
 import urllib.error
 import urllib.request
 from urllib.parse import urlparse
@@ -38,13 +39,25 @@ def check_url(url: str) -> str:
     return url.rstrip("/")
 
 
-def _call(method: str, url: str, body: dict | None, timeout: float) -> tuple[int, str]:
+def tls_context(url: str, cafile: str | None) -> ssl.SSLContext | None:
+    """A verifying context for https URLs (trusting `cafile` when given); None for http."""
+    if urlparse(url).scheme != "https":
+        return None
+    return ssl.create_default_context(cafile=str(cafile) if cafile else None)
+
+
+def _call(
+    method: str, url: str, body: dict | None, timeout: float,
+    key: str | None = None, context: ssl.SSLContext | None = None,
+) -> tuple[int, str]:  # fmt: skip
     data = None if body is None else json.dumps(body).encode()
     req = urllib.request.Request(url, data=data, method=method)
     if data is not None:
         req.add_header("content-type", "application/json")
+    if key:
+        req.add_header("authorization", f"Bearer {key}")
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 - scheme checked
+        with urllib.request.urlopen(req, timeout=timeout, context=context) as resp:  # noqa: S310
             return resp.status, resp.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as exc:
         return exc.code, exc.read().decode("utf-8", "replace")
@@ -58,9 +71,13 @@ def _json(text: str) -> dict:
     return out if isinstance(out, dict) else {}
 
 
-def run_smoke(url: str, timeout: float = 5.0) -> list[tuple[str, bool, str]]:
-    """Each result is (check name, passed, detail)."""
+def run_smoke(
+    url: str, timeout: float = 5.0, key: str | None = None, cafile: str | None = None
+) -> list[tuple[str, bool, str]]:
+    """Each result is (check name, passed, detail). `key` and `cafile` are for an API that has
+    keys and TLS on (a key that may call /v1/score and /v1/model: score or admin)."""
     base = check_url(url)
+    context = tls_context(base, cafile)
     results: list[tuple[str, bool, str]] = []
 
     def add(name, ok, detail=""):
@@ -68,13 +85,13 @@ def run_smoke(url: str, timeout: float = 5.0) -> list[tuple[str, bool, str]]:
 
     def get(path):
         try:
-            return _call("GET", base + path, None, timeout)
+            return _call("GET", base + path, None, timeout, key, context)
         except (OSError, ValueError) as exc:
             return 0, str(exc)
 
     def post(body):
         try:
-            return _call("POST", base + "/v1/score", body, timeout)
+            return _call("POST", base + "/v1/score", body, timeout, key, context)
         except (OSError, ValueError) as exc:
             return 0, str(exc)
 

@@ -155,8 +155,9 @@ def _cmd_check(args) -> int:
 def _cmd_smoke(args) -> int:
     from mmrisk.api.smoke import SmokeError, run_smoke
 
+    key = os.environ.get("MMRISK_API_KEY") or None  # never a flag: it would end up in history
     try:
-        results = run_smoke(args.url, args.timeout)
+        results = run_smoke(args.url, args.timeout, key, args.cafile)
     except SmokeError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -218,6 +219,9 @@ def build_parser() -> argparse.ArgumentParser:
     m = sub.add_parser("smoke", help="non-mutating checks of a running API")
     m.add_argument("--url", default="http://127.0.0.1:8000")
     m.add_argument("--timeout", type=float, default=5.0)
+    m.add_argument(
+        "--cafile", default=None, help="trust this certificate (a self-signed https API)"
+    )
     return p
 
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -52,7 +53,8 @@ def _cmd_run(args) -> int:
                 )
             store = PredictionStore(args.store)
         if args.url:
-            scorer = HttpScorer(args.url)
+            key = os.environ.get("MMRISK_API_KEY") or None
+            scorer = HttpScorer(args.url, key=key, cafile=args.cafile)
             if not scorer.ready():
                 raise StreamError(f"the API at {args.url} is not ready (start it first)")
             print(
@@ -144,6 +146,9 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--lake", type=Path, default=Path("data/processed"))
     r.add_argument("--model-dir", type=Path, default=Path("models/advanced"))
     r.add_argument("--url", default=None, help="score through a running API instead of in-process")
+    r.add_argument(
+        "--cafile", default=None, help="trust this certificate (a self-signed https API)"
+    )
     r.add_argument("--from", dest="start", default=None, help="ISO time the stream starts at")
     r.add_argument(
         "--last-days", type=float, default=7.0, help="stream the last N days (default 7)"

@@ -19,7 +19,7 @@ from mmrisk.api.service import (
     ScoringService,
     UnknownCustomerError,
 )
-from mmrisk.api.smoke import check_url
+from mmrisk.api.smoke import check_url, tls_context
 
 SCORED, DUPLICATE, INVALID = "scored", "duplicate", "invalid"
 UNKNOWN_CUSTOMER, OUT_OF_ORDER, CONFLICT = "unknown_customer", "out_of_order", "conflict"
@@ -82,13 +82,18 @@ class HttpScorer:
 
     name = "http"
 
-    def __init__(self, url: str, timeout: float = 10.0):
+    def __init__(
+        self, url: str, timeout: float = 10.0, key: str | None = None, cafile: str | None = None
+    ):
         self.base = check_url(url)
         self.timeout = timeout
+        self.key = key
+        self.context = tls_context(self.base, cafile)
 
     def ready(self) -> bool:
         try:
-            with urllib.request.urlopen(self.base + "/ready", timeout=self.timeout) as r:  # noqa: S310
+            ready = urllib.request.Request(self.base + "/ready")
+            with urllib.request.urlopen(ready, timeout=self.timeout, context=self.context) as r:  # noqa: S310
                 return r.status == 200
         except (OSError, ValueError):
             return False
@@ -102,8 +107,10 @@ class HttpScorer:
         body = json.dumps(_wire(txn)).encode()
         req = urllib.request.Request(self.base + "/v1/score", data=body, method="POST")
         req.add_header("content-type", "application/json")
+        if self.key:
+            req.add_header("authorization", f"Bearer {self.key}")
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:  # noqa: S310
+            with urllib.request.urlopen(req, timeout=self.timeout, context=self.context) as resp:  # noqa: S310
                 out = json.loads(resp.read().decode())
             return done(DUPLICATE if out.get("duplicate") else SCORED, out)
         except urllib.error.HTTPError as exc:
