@@ -1,0 +1,23 @@
+# Dashboard image (Phase 17 app, packaged in Phase 20). Read-only by design: it only reads files
+# that compose mounts read-only. Not built or run by the assistant (no Docker in its sandbox): TO VERIFY.
+# Build: docker compose -f docker-compose.prod.yml build dashboard
+
+FROM python:3.12-slim-bookworm AS build
+ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /src
+COPY pyproject.toml README.md ./
+COPY src ./src
+RUN python -m venv /opt/venv && /opt/venv/bin/pip install ".[dashboard]"
+
+FROM python:3.12-slim-bookworm
+RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin mmrisk
+COPY --from=build /opt/venv /opt/venv
+ENV PATH=/opt/venv/bin:$PATH PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 HOME=/tmp STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+WORKDIR /app
+USER 10001
+EXPOSE 8501
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)"]
+# The login is on whenever a password file is given. Compose publishes the port on the host's
+# 127.0.0.1 only; the dashboard has no TLS of its own.
+CMD ["python", "-m", "mmrisk.dashboard", "run", "--host", "0.0.0.0", "--allow-external", "--no-browser"]

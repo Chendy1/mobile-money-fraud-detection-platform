@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc | deploy-init | preflight | up-prod | down-prod | verify | backup
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -9,7 +9,7 @@ switch ($Task) {
     "setup" {
         python -m venv .venv
         & $venvPython -m pip install --upgrade pip
-        & $venvPython -m pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
+        & $venvPython -m pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard,deploy]"
     }
     "lint"   { & $venvPython -m ruff check .; & $venvPython -m ruff format --check . }
     "format" { & $venvPython -m ruff check --fix .; & $venvPython -m ruff format . }
@@ -50,6 +50,15 @@ switch ($Task) {
     "dashcheck" { & $venvPython -m mmrisk.dashboard check }
     "loadtest" { & $venvPython -m mmrisk.loadtest bench --profile step --rates 10,25,50,75,100,125,150 --step-seconds 8 --last-days 14 }
     "inproc" { & $venvPython -m mmrisk.loadtest inproc }
+    "deploy-init" { & $venvPython -m mmrisk.deploy init }
+    "preflight" { & $venvPython -m mmrisk.deploy preflight }
+    "up-prod" { docker compose -f docker-compose.prod.yml up --build -d }
+    "down-prod" { docker compose -f docker-compose.prod.yml --profile monitoring down }
+    "verify" { & $venvPython -m mmrisk.deploy verify }
+    "backup" {
+        New-Item -ItemType Directory -Force backups | Out-Null
+        & $venvPython -m mmrisk.deploy backup --out ("backups\mmrisk-" + (Get-Date -Format "yyyyMMdd-HHmmss") + ".tgz")
+    }
     "secscan" { & $venvPython -m mmrisk.security scan }
     "audit" { & $venvPython -m pip install pip-audit; & $venvPython -m pip_audit --skip-editable }
     "upmon" { docker compose --profile monitoring up --build }

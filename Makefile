@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc deploy-init preflight up-prod down-prod verify backup
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
 lint:
@@ -91,3 +91,22 @@ loadtest:
 
 inproc:
 	python -m mmrisk.loadtest inproc
+
+deploy-init:
+	python -m mmrisk.deploy init
+
+preflight:
+	python -m mmrisk.deploy preflight
+
+up-prod:
+	docker compose -f docker-compose.prod.yml up --build -d
+
+down-prod:
+	docker compose -f docker-compose.prod.yml --profile monitoring down
+
+verify:
+	python -m mmrisk.deploy verify
+
+backup:
+	mkdir -p backups
+	python -m mmrisk.deploy backup --out backups/mmrisk-$$(date +%Y%m%d-%H%M%S).tgz

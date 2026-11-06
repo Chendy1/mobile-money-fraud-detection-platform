@@ -1,0 +1,193 @@
+# Production-like local deployment (Phase 20): API keys, TLS, secrets in files, hardened
+# containers that restart, health checks, logs that rotate. It runs on one computer.
+#
+#   python -m mmrisk.deploy init                      (once: makes ./secrets, prints keys once)
+#   python -m mmrisk.deploy preflight                 (must pass)
+#   docker compose -f docker-compose.prod.yml up --build -d
+#   $env:MMRISK_API_KEY = "<the score or admin key>"
+#   python -m mmrisk.deploy verify --url https://127.0.0.1:8443
+#
+# None of this has been run by the assistant (Docker is not available in its sandbox): the file
+# is checked by `deploy preflight` and by tests as a file, and everything marked TO VERIFY in
+# docs/deployment.md still needs a first run on your machine.
+name: mmrisk-prod
+
+x-hardened: &hardened
+  read_only: true
+  tmpfs:
+    - /tmp
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+secrets:
+  api_keys:
+    file: ./secrets/api_keys.json
+  metrics_key:
+    file: ./secrets/metrics_key
+  tls_cert:
+    file: ./secrets/tls/cert.pem
+  tls_key:
+    file: ./secrets/tls/key.pem
+  dashboard_hash:
+    file: ./secrets/dashboard.hash
+  grafana_password:
+    file: ./secrets/grafana_admin_password
+
+services:
+  api:
+    <<: *hardened
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mmrisk-api:prod
+    # The registry root: the API serves the version the production pointer names (Phase 16).
+    # After a promotion or a rollback, restart the API: `docker compose -f ... restart api`.
+    command:
+      - python
+      - -m
+      - mmrisk.api
+      - serve
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8443"
+      - --model-dir
+      - /app/models/registry
+      - --lake
+      - /app/data/processed
+      - --auth-keys
+      - /run/secrets/api_keys
+      - --tls-cert
+      - /run/secrets/tls_cert
+      - --tls-key
+      - /run/secrets/tls_key
+      - --audit-log
+      - /app/data/audit/audit.jsonl
+      - --allow-external
+    secrets:
+      - api_keys
+      - tls_cert
+      - tls_key
+    ports:
+      - "127.0.0.1:8443:8443"
+    volumes:
+      - ./models/registry:/app/models/registry:ro
+      - ./data/processed:/app/data/processed:ro
+      - ./data/audit:/app/data/audit
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import ssl, urllib.request as u; u.urlopen('https://localhost:8443/ready', timeout=3, context=ssl.create_default_context(cafile='/run/secrets/tls_cert'))"
+      interval: 30s
+      timeout: 5s
+      start_period: 120s
+      retries: 3
+    mem_limit: 1g
+    cpus: 1.0
+    pids_limit: 128
+
+  dashboard:
+    <<: *hardened
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    image: mmrisk-dashboard:prod
+    command:
+      - python
+      - -m
+      - mmrisk.dashboard
+      - run
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8501"
+      - --allow-external
+      - --no-browser
+      - --password-file
+      - /run/secrets/dashboard_hash
+      - --store
+      - /app/data/predictions
+      - --baseline
+      - /app/data/monitoring/baseline.json
+      - --drift-report
+      - /app/data/drift/report.json
+      - --registry
+      - /app/models/registry
+      - --retrain-dir
+      - /app/data/retrain
+    secrets:
+      - dashboard_hash
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - ./data/predictions:/app/data/predictions:ro
+      - ./data/monitoring:/app/data/monitoring:ro
+      - ./data/drift:/app/data/drift:ro
+      - ./data/retrain:/app/data/retrain:ro
+      - ./models/registry:/app/models/registry:ro
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 128
+
+  # Opt-in:  docker compose -f docker-compose.prod.yml --profile monitoring up -d
+  prometheus:
+    <<: *hardened
+    profiles: ["monitoring"]
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    secrets:
+      - metrics_key
+      - tls_cert
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infrastructure/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    depends_on:
+      api:
+        condition: service_healthy
+    mem_limit: 384m
+    cpus: 0.5
+    pids_limit: 64
+
+  grafana:
+    <<: *hardened
+    profiles: ["monitoring"]
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD__FILE: /run/secrets/grafana_password
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+    secrets:
+      - grafana_password
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./infrastructure/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infrastructure/monitoring/grafana/dashboards:/etc/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    mem_limit: 384m
+    cpus: 0.5
+    pids_limit: 128
+
+volumes:
+  prometheus-data:
+  grafana-data:

@@ -56,3 +56,22 @@ jobs:
         run: test "$(docker run --rm --entrypoint id mmrisk-api:ci -u)" = "10001"
       - name: The compose file is valid
         run: docker compose config -q
+      - name: The dashboard image builds and runs as a non-root user
+        run: |
+          docker build -f Dockerfile.dashboard -t mmrisk-dashboard:ci .
+          test "$(docker run --rm --entrypoint id mmrisk-dashboard:ci -u)" = "10001"
+      - name: The production-like compose file is valid and passes its own preflight rules
+        run: |
+          pip install -e ".[deploy]"
+          python -m mmrisk.deploy init
+          docker compose -f docker-compose.prod.yml config -q
+          python - <<'PY'
+          from pathlib import Path
+          from mmrisk.deploy import preflight as P
+          bad = [c for c in P.check_compose(Path("docker-compose.prod.yml")) if c.status == "fail"]
+          bad += [c for c in P.check_secrets(Path("secrets")) if c.status == "fail"]
+          bad += [c for c in P.check_ignores(Path(".")) if c.status == "fail"]
+          for c in bad:
+              print("FAIL", c.name, c.detail)
+          raise SystemExit(1 if bad else 0)
+          PY
