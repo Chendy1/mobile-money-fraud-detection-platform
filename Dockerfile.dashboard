@@ -1,5 +1,5 @@
 # Dashboard image (Phase 17 app, packaged in Phase 20). Read-only by design: it only reads files
-# that compose mounts read-only. Not built or run by the assistant (no Docker in its sandbox): TO VERIFY.
+# that compose mounts read-only. First run on the developer's machine found the registry reader needs scikit-learn (joblib): fixed.
 # Build: docker compose -f docker-compose.prod.yml build dashboard
 
 FROM python:3.12-slim-bookworm AS build
@@ -7,7 +7,7 @@ ENV PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /src
 COPY pyproject.toml README.md ./
 COPY src ./src
-RUN python -m venv /opt/venv && /opt/venv/bin/pip install ".[dashboard]"
+RUN python -m venv /opt/venv && /opt/venv/bin/pip install ".[dashboard-image]"
 
 FROM python:3.12-slim-bookworm
 RUN useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin mmrisk

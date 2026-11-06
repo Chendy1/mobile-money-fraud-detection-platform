@@ -32,6 +32,8 @@ tracking = ["mlflow>=2.14"]
 api = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "prometheus-client>=0.20"]
 # local dashboard (Phase 17); read-only, runs on this computer only
 dashboard = ["streamlit>=1.40"]
+# what the dashboard container installs: the page plus the registry reader, which imports the model bundle (scikit-learn brings joblib)
+dashboard-image = ["streamlit>=1.40", "scikit-learn>=1.4"]
 # making a TLS certificate and checking its expiry for the production-like deployment (Phase 20)
 deploy = ["cryptography>=42", "pyyaml>=6"]
 # the smallest set that can serve a saved model (the container image installs only this)

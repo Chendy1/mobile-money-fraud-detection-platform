@@ -2,15 +2,15 @@
 
 One command set that runs the API and the dashboard the way a small production service would be run: keys, TLS, secrets in files, hardened containers that restart, health checks, rotating logs, resource limits, a preflight before start, a check from outside after start, and a backup you can restore. Design and limits: [ADR-025](adr/ADR-025-local-deployment.md). Threats: [threat-model.md](threat-model.md).
 
-**What this is not.** It runs on one computer. It is not high availability, not a cloud deployment and not a security audit. The data is synthetic. A self-signed certificate protects the connection on this machine only. **Docker was not available where this phase was built, so the compose file and the images have never been run by the assistant.** Everything about containers below is checked as a file (preflight rules and tests) and is marked TO VERIFY until you have run it once.
+**What this is not.** It runs on one computer. It is not high availability, not a cloud deployment and not a security audit. The data is synthetic. A self-signed certificate protects the connection on this machine only. **Docker was not available where this phase was built.** The first real run was on the developer's machine and found one defect (the dashboard image), now fixed. Items not yet run are marked TO VERIFY.
 
 ## What was verified and what was not
 | Item | Status |
 |---|---|
 | Secret creation, preflight rules, verify checks, backup and restore | Tested (unit tests and a real API process started with the compose file's command line, TLS and keys on). In the assistant's Linux sandbox. |
 | The compose file as a file (rules: read-only, no capabilities, loopback ports, limits, secrets as files, no literal secrets) | Tested as a file; `docker compose config` run only in CI (TO VERIFY first result) |
-| `docker compose up --build` of the API and dashboard images | TO VERIFY (never run) |
-| The TLS health check inside the container | TO VERIFY |
+| `docker compose up --build`, API image and its TLS health check | **Verified on the developer's Windows machine (Docker Desktop):** built, healthy, `deploy verify` 12 of 12 passed against the container |
+| Dashboard image | First run crashed (`No module named 'joblib'`: the registry reader needs scikit-learn). Fixed in the image (extra `dashboard-image`) and guarded by a test; the rebuilt container is TO VERIFY |
 | Reading `/app/data/audit` and secret files as user 10001 on Linux hosts | TO VERIFY (see "Permissions") |
 | Prometheus scraping `https://api:8443/metrics` with the metrics key; Grafana with a password file | TO VERIFY |
 | Windows behaviour of the `deploy` commands (init, preflight, verify, backup, restore) | TO VERIFY (the unit tests pass in the sandbox only) |

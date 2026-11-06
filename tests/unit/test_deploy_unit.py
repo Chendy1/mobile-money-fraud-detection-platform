@@ -375,7 +375,7 @@ def test_the_dashboard_image_is_pinned_unprivileged_and_holds_no_secret():
         if x.startswith(("ENV", "ARG", "LABEL")):
             assert not SECRET_WORDS.search(x), x
         assert not x.startswith("ADD ")
-    assert '".[dashboard]"' in text and "HEALTHCHECK" in text and "EXPOSE 8501" in text
+    assert '".[dashboard-image]"' in text and "HEALTHCHECK" in text and "EXPOSE 8501" in text
 
 
 def test_secrets_are_kept_out_of_git_and_out_of_the_image():
@@ -735,3 +735,34 @@ def test_a_metrics_key_that_gets_a_200_without_metrics_in_the_body_fails(monkeyp
     out = V.verify("https://127.0.0.1:1", None, "S", "M")
     by = {c.name: c.status for c in out}
     assert by["a metrics key reads /metrics"] == "fail"
+
+
+def test_the_dashboard_image_installs_everything_the_dashboard_imports():
+    """A first container run found `No module named joblib`: the image had too small an extra.
+
+    The dashboard reads the registry, which imports the model bundle (scikit-learn, joblib).
+    Block every package the image does not install and import the dashboard's modules.
+    """
+    import subprocess
+    import sys
+    import tomllib
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    extra = re.search(r'pip install "\.\[([a-z-]+)\]"', (root / "Dockerfile.dashboard").read_text())
+    assert extra, "Dockerfile.dashboard must install an extra"
+    extras = tomllib.loads((root / "pyproject.toml").read_text())["project"][
+        "optional-dependencies"
+    ]
+    installed = {re.split(r"[<>=\[ ]", d)[0].lower() for d in extras[extra.group(1)]}
+    assert {"streamlit", "scikit-learn"} <= installed
+    blocked = [m for m in ("lightgbm", "fastapi", "uvicorn", "prometheus_client", "mlflow",
+                           "duckdb", "matplotlib", "cryptography", "yaml", "httpx")
+               if m not in installed]  # fmt: skip
+    code = (
+        f"import sys\nfor m in {blocked!r}: sys.modules[m] = None\n"
+        "import mmrisk.dashboard.cli, mmrisk.dashboard.data, mmrisk.dashboard.gate\n"
+    )
+    done = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                          env={**os.environ, "PYTHONPATH": str(root / "src")})  # fmt: skip
+    assert done.returncode == 0, done.stderr[-600:]

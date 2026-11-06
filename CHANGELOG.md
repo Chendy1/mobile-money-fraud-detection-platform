@@ -3,6 +3,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 
 ## [Unreleased]
 
+- Fix (Phase 20): the dashboard container crashed at start (`No module named 'joblib'`): its registry reader imports the model bundle, which needs scikit-learn. The image now installs the extra `dashboard-image` (Streamlit and scikit-learn); a test imports the dashboard modules with every package the image does not install blocked. First run on a real Docker: API image healthy and `deploy verify` 12 of 12.
+
 - Phase 20: production-like local deployment (`mmrisk.deploy`, ADR-025, `docs/deployment.md`). `python -m mmrisk.deploy init | preflight | verify | backup | restore`; `docker-compose.prod.yml` (API with TLS and keys, dashboard, optional Prometheus and Grafana; secrets as files, read-only containers, no capabilities, limits, restart, log rotation, loopback ports); `Dockerfile.dashboard`; `smoke` and the stream simulator now accept a key (`MMRISK_API_KEY`) and `--cafile`; `dev.ps1 deploy-init | preflight | up-prod | down-prod | verify | backup`; CI builds the dashboard image and checks the production compose file's rules. Docker was not available to run the stack: TO VERIFY.
 
 - Fix (Phase 19): on Windows `loadtest bench` ended with exit code 2 after a good run because the API it started (a child of the venv launcher) was not stopped and kept `server.log` open; it now stops the whole process tree (`taskkill /T`) and a folder that cannot be removed no longer changes the result. Docs: a second machine's measurements.

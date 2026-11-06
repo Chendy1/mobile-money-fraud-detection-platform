@@ -283,3 +283,6 @@ It loads the production version at start. `docker compose -f docker-compose.prod
 
 **`restore` refuses with `unsafe path`, `differ`, `disagree` or `already exist`**
 The archive was altered or is damaged, or the target holds files. Nothing was written. Use `--dry-run` to check an archive, an empty `--target`, or `--force` if replacing is intended.
+
+**Dashboard container restarts, log shows `ModuleNotFoundError`**
+The image lacks a package the dashboard imports. Fixed for `joblib` (extra `dashboard-image`); rebuild with `docker compose -f docker-compose.prod.yml up --build -d`. Read the last lines of `docker compose -f docker-compose.prod.yml logs dashboard`.
