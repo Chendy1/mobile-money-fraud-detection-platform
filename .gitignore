@@ -30,6 +30,8 @@ data/drift/
 data/retrain/
 data/security/
 data/loadtest/
+secrets/
+backups/
 api_keys.json
 dashboard.hash
 !data/**/.gitkeep

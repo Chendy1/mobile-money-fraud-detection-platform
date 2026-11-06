@@ -29,5 +29,7 @@ scripts
 *.parquet
 *.duckdb
 *.joblib
+secrets
+backups
 *.pem
 *.key
