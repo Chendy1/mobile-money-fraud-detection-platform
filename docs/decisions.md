@@ -32,8 +32,9 @@
 | [023](adr/ADR-023-security-hardening.md) | Security hardening: hashed API keys with roles, TLS, audit log, allow-list loader, secret scan | Accepted |
 | [024](adr/ADR-024-load-testing.md) | Load testing: own open-loop tool, latency from intended start, ASSUMED targets | Accepted |
 | [025](adr/ADR-025-local-deployment.md) | Production-like local deployment: secrets as files, hardened compose, preflight, verify, backup and restore | Accepted |
+| [026](adr/ADR-026-aws-design.md) | AWS design (design only): ECS Fargate, S3, no public endpoint, sourced prices only | Accepted |
 
-Planned: ECS vs EKS.
+Decided in Phase 21: ECS on Fargate, not EKS (ADR-026).
 
 ## Security (Phase 18, ADR-023)
 Keys with roles for the API; external binding needs keys, TLS and a flag; allow-list unpickling (not a sandbox); shared-password dashboard login; own secret scanner plus non-blocking `pip-audit`. All limits ASSUMED.
@@ -43,6 +44,9 @@ Own small open-loop tool, standard library only; latency measured from the inten
 
 ## Production-like local deployment (Phase 20, ADR-025)
 Second compose file with Docker secrets as files, hardened containers, loopback ports; a preflight that reads the compose file as data; `verify` from outside (boundaries, not only the happy path); strict backup and restore; one self-signed certificate used as its own trust anchor; retraining stays on the host; model changes need an API restart. Docker never run by the assistant: TO VERIFY.
+
+## AWS design (Phase 21, ADR-026)
+Design only, nothing created. ECS Fargate, S3 for lake and registry, no database, no public endpoint by default (SSM port forward), retraining stays outside AWS, no Prometheus/Grafana move. Only sourced prices are quoted; the rest are "not verified". Gaps found: secrets as files vs env vars, registry/lake fetched from S3 at start, restart on promotion.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.

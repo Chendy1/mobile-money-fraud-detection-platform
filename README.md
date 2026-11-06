@@ -190,6 +190,9 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 ## Production-like local deployment
 `docker-compose.prod.yml` runs the API (TLS, API keys) and the dashboard (password) in read-only, capability-free containers with secrets as files, limits, restart and log rotation, on loopback ports. `python -m mmrisk.deploy init | preflight | verify | backup | restore` make the secrets, check the setup before start, test the running service from outside, and back up and restore the registry and records. One machine; not high availability; **the compose stack has not been run by the assistant (Docker unavailable), see TO VERIFY in [docs/deployment.md](docs/deployment.md)**.
 
+## AWS design (design only)
+How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, least-privilege roles, cost controls) is in [docs/aws-design.md](docs/aws-design.md). **Nothing was created or applied in AWS**; prices appear only where read from AWS pages, with sources.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Retraining guide](docs/retraining.md)
@@ -198,6 +201,7 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 - [Roadmap](docs/roadmap.md)
 - [Load testing](docs/load-testing.md)
 - [Production-like local deployment](docs/deployment.md)
+- [AWS design](docs/aws-design.md)
 - [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)
