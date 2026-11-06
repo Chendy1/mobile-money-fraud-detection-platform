@@ -262,3 +262,24 @@ Fixed in the Phase 19 fix: the API's launcher process was stopped but the server
 
 **Latency in the report is much larger than `service p95`**
 Requests started late: the API (or the generator) could not keep up, so they queued. Compare `late-start p95`. More `--workers` helps only if the generator was the limit.
+
+**`preflight` says FAIL for a compose rule, a secret or the model**
+The line names the file and the rule. Do not edit the check; fix the file. `docker-compose.prod.yml` must keep ports on `127.0.0.1`, read-only containers and all secrets under `secrets\`.
+
+**`error: ... already holds ... --force replaces them` (`deploy init`)**
+Secrets exist. `--force` replaces every key and the certificate, so every client needs the new ones.
+
+**`verify` fails with `CERTIFICATE_VERIFY_FAILED`**
+The client does not trust the certificate: use `--cafile secrets\tls\cert.pem` (the default for `verify`) and a URL whose host is `localhost` or `127.0.0.1`, not your computer's name. If you ran `init --force`, restart the API so it loads the new certificate.
+
+**`verify` fails on `no key: /v1/model is refused` (got 200)**
+The API is running without keys: you started the development compose file or `serve` without `--auth-keys`. Stop it and start `docker-compose.prod.yml`.
+
+**Container unhealthy, log says `permission denied` on `/run/secrets/...` or `/app/data/audit` (Linux or WSL)**
+See "Permissions" in `docs/deployment.md` (TO VERIFY; not reproduced by the assistant).
+
+**API serves the old model after a promotion**
+It loads the production version at start. `docker compose -f docker-compose.prod.yml restart api`.
+
+**`restore` refuses with `unsafe path`, `differ`, `disagree` or `already exist`**
+The archive was altered or is damaged, or the target holds files. Nothing was written. Use `--dry-run` to check an archive, an empty `--target`, or `--force` if replacing is intended.

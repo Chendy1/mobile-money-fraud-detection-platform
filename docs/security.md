@@ -42,3 +42,6 @@ One shared password (at least 12 characters), stored as an scrypt hash; the hash
 
 ## What is not done
 No secret store (Grafana's password is still an environment variable), no key expiry, no per-user accounts or SSO, no TLS between containers, no WAF, no Alertmanager, no log shipping, no image scanning or digest pinning, GitHub Actions are pinned by tag not commit SHA (the SHAs were not verified offline: TO VERIFY), no penetration test, nothing run against a real network.
+
+## Running it as a service (Phase 20)
+[deployment.md](deployment.md) puts these features together: `python -m mmrisk.deploy init` makes the keys, certificate and passwords as files; `preflight` checks the setup; `verify` tests the running service from outside. The smoke test and the stream simulator send the key from `MMRISK_API_KEY` and trust the certificate with `--cafile`.

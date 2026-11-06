@@ -44,6 +44,9 @@ flowchart TB
 ## ML lifecycle
 Time-based split, then rule baseline, Logistic Regression, Random Forest, LightGBM. Select on PR-AUC. Choose LOW/MEDIUM/HIGH thresholds from a cost model. Explain with SHAP, document in a model card, log to MLflow. A candidate replaces the champion only if it passes quality gates **and** is promoted by a person (or by the opt-in `--auto-promote`, never for a quick-mode candidate). The registry is a folder, not MLflow's registry (ADR-021). Rollback repoints `production.json` to the previous version.
 
+## Production-like local deployment (Phase 20)
+`docker-compose.prod.yml` adds to the Phase 12 layout: keys and TLS on the API, a password on the dashboard, secrets mounted as files, read-only containers without capabilities, resource limits, restart, rotating logs, loopback ports. `mmrisk.deploy` has the checks that run before (`preflight`) and after (`verify`) start and the backup and restore. Retraining and the registry stay on the host; containers mount them read-only. See [deployment.md](deployment.md) and ADR-025.
+
 ## Local vs optional cloud
 | Local (default) | Optional AWS (design, plan-only) | Reason |
 |---|---|---|

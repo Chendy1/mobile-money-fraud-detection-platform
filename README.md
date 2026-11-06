@@ -187,6 +187,9 @@ A small open-loop load generator (`python -m mmrisk.loadtest bench`) with step, 
 ## Security
 API keys with roles, rate limits, an audit log, optional TLS, a dashboard login, a checked model loader and a secret scan, all described with their limits in [docs/security.md](docs/security.md). Synthetic data only; not a security audit.
 
+## Production-like local deployment
+`docker-compose.prod.yml` runs the API (TLS, API keys) and the dashboard (password) in read-only, capability-free containers with secrets as files, limits, restart and log rotation, on loopback ports. `python -m mmrisk.deploy init | preflight | verify | backup | restore` make the secrets, check the setup before start, test the running service from outside, and back up and restore the registry and records. One machine; not high availability; **the compose stack has not been run by the assistant (Docker unavailable), see TO VERIFY in [docs/deployment.md](docs/deployment.md)**.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Retraining guide](docs/retraining.md)
@@ -194,6 +197,7 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 - [Decisions (ADR index)](docs/decisions.md)
 - [Roadmap](docs/roadmap.md)
 - [Load testing](docs/load-testing.md)
+- [Production-like local deployment](docs/deployment.md)
 - [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)

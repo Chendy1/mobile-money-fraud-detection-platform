@@ -26,10 +26,12 @@
 | [018](adr/ADR-018-streaming-simulation.md) | Streaming simulation: bounded queue, reorder buffer, append-only prediction store | Accepted |
 
 | [019](adr/ADR-019-monitoring.md) | Monitoring: API metrics, Prometheus and Grafana, checks on stored predictions | Accepted |
-
 | [020](adr/ADR-020-drift-detection.md) | Drift detection: PSI against a frozen validation-window reference; Evidently not used | Accepted |
 | [021](adr/ADR-021-gated-retraining.md) | Gated retraining: file-based registry, trigger check, candidate-vs-champion gates; promotion explicit | Accepted |
 | [022](adr/ADR-022-dashboard.md) | Dashboard: read-only Streamlit page on a tested, Streamlit-free data layer; loopback only | Accepted |
+| [023](adr/ADR-023-security-hardening.md) | Security hardening: hashed API keys with roles, TLS, audit log, allow-list loader, secret scan | Accepted |
+| [024](adr/ADR-024-load-testing.md) | Load testing: own open-loop tool, latency from intended start, ASSUMED targets | Accepted |
+| [025](adr/ADR-025-local-deployment.md) | Production-like local deployment: secrets as files, hardened compose, preflight, verify, backup and restore | Accepted |
 
 Planned: ECS vs EKS.
 
@@ -38,6 +40,9 @@ Keys with roles for the API; external binding needs keys, TLS and a flag; allow-
 
 ## Load testing (Phase 19, ADR-024)
 Own small open-loop tool, standard library only; latency measured from the intended start; one worker per customer; `bench` owns its server; loopback only; ASSUMED targets printed on every report; not run in CI.
+
+## Production-like local deployment (Phase 20, ADR-025)
+Second compose file with Docker secrets as files, hardened containers, loopback ports; a preflight that reads the compose file as data; `verify` from outside (boundaries, not only the happy path); strict backup and restore; one self-signed certificate used as its own trust anchor; retraining stays on the host; model changes need an API restart. Docker never run by the assistant: TO VERIFY.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.
