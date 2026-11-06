@@ -188,8 +188,8 @@ def test_preflight_on_the_running_stack_files_has_no_failures(stack, env, capsys
 def test_the_audit_log_records_the_calls_without_any_key_text(stack):
     text = stack["audit"].read_text()
     assert text.strip()
-    assert stack["created"].score_key.split("_")[2] not in text
-    assert metrics_key(stack).split("_")[2] not in text
+    assert stack["created"].score_key.split("_", 2)[2] not in text
+    assert metrics_key(stack).split("_", 2)[2] not in text
     for line in text.splitlines():
         json.loads(line)
 
