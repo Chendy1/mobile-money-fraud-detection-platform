@@ -75,3 +75,20 @@ jobs:
               print("FAIL", c.name, c.detail)
           raise SystemExit(1 if bad else 0)
           PY
+
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+      - name: Format
+        run: terraform fmt -check -recursive -diff
+      - name: Init without a backend (no credentials, no AWS call)
+        run: terraform init -backend=false -input=false
+      - name: Validate
+        run: terraform validate

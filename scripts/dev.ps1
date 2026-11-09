@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
-# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc | deploy-init | preflight | up-prod | down-prod | verify | backup
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup")][string]$Task)
+# Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc | deploy-init | preflight | up-prod | down-prod | verify | backup | tf-validate
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup", "tf-validate")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -50,6 +50,12 @@ switch ($Task) {
     "dashcheck" { & $venvPython -m mmrisk.dashboard check }
     "loadtest" { & $venvPython -m mmrisk.loadtest bench --profile step --rates 10,25,50,75,100,125,150 --step-seconds 8 --last-days 14 }
     "inproc" { & $venvPython -m mmrisk.loadtest inproc }
+    "tf-validate" {
+        # needs the terraform CLI; makes no AWS call and needs no credentials
+        terraform -chdir=infrastructure/terraform fmt -check -diff
+        terraform -chdir=infrastructure/terraform init -backend=false -input=false
+        terraform -chdir=infrastructure/terraform validate
+    }
     "deploy-init" { & $venvPython -m mmrisk.deploy init }
     "preflight" { & $venvPython -m mmrisk.deploy preflight }
     "up-prod" { docker compose -f docker-compose.prod.yml up --build -d }

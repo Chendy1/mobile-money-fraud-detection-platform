@@ -50,6 +50,9 @@ mlartifacts/
 *.tfstate.*
 *.tfvars
 !*.tfvars.example
+*.tfplan
+*.tfplan.*
+crash.log
 
 # OS / IDE
 .DS_Store
