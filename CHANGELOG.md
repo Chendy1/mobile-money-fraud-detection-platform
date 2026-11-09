@@ -3,6 +3,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning: SemV
 
 ## [Unreleased]
 
+- Phase 22: Terraform, plan-only (`infrastructure/terraform`, `docs/terraform.md`, ADR-027). The Phase 21 design as code: private VPC without gateways or public IPs, endpoints, three private S3 buckets, ECR, empty secrets, IAM with named resources, ECS services at zero tasks, a budget. CI job `terraform` (fmt, init without backend, validate); `dev.ps1 tf-validate`. 19 parse-based policy tests, 23 mutations all caught. Never validated or planned by the assistant (no provider registry, no AWS account): TO VERIFY. Nothing applied.
+
 - Phase 21: AWS design, documents only (`docs/aws-design.md`, ADR-026). Mapping from the local stack, architecture diagram, network options, compute and secrets (with the gaps found), data, identity, observability, cost controls, rejected options and decisions for the owner. Prices quoted only where read from an AWS page (source and date given); everything else is "not verified". 22 tests guard the document (sections, dollar figures only in the cost section and matching their arithmetic, sourced rows, no account ids, no Terraform yet, diagrams parse). Nothing was created in AWS.
 
 - Fix (Phase 20): the dashboard container crashed at start (`No module named 'joblib'`): its registry reader imports the model bundle, which needs scikit-learn. The image now installs the extra `dashboard-image` (Streamlit and scikit-learn); a test imports the dashboard modules with every package the image does not install blocked. First run on a real Docker: API image healthy and `deploy verify` 12 of 12.

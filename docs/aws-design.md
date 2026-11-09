@@ -1,6 +1,6 @@
 # AWS design (Phase 21)
 
-**Status: a design only.** No AWS account was used, nothing was created, nothing costs money. Phase 22 turns this into Terraform that can only `validate` and `plan`; `apply` needs your explicit approval and is not part of the project's default path. The data stays synthetic, so nothing here is a statement about handling real mobile-money data. Decision record: [ADR-026](adr/ADR-026-aws-design.md).
+**Status: a design only.** No AWS account was used, nothing was created, nothing costs money. Phase 22 turns this into Terraform ([terraform.md](terraform.md)) that can only `validate` and `plan`; `apply` needs your explicit approval and is not part of the project's default path. The data stays synthetic, so nothing here is a statement about handling real mobile-money data. Decision record: [ADR-026](adr/ADR-026-aws-design.md).
 
 Everything about AWS behaviour below comes from my knowledge of the services, not from running them. Anything I could not check against AWS documentation or a pricing page is marked **TO VERIFY**. Figures that are my choice are marked **ASSUMED**.
 
@@ -86,7 +86,7 @@ Keep it where it is: the host (or a CI job) trains, applies the gates, writes th
 - Not moved: Prometheus and Grafana. The API's `/metrics` needs a bearer token, and CloudWatch cannot scrape it. Options (Amazon Managed Prometheus, an ADOT collector sidecar, running Prometheus in a task) all add cost and moving parts. The local monitoring from Phase 14 stays the reference, and the dashboard's own Health tab reads files. Decide later whether the demo needs live metrics on AWS.
 
 ## 9. Identity and access
-- **Task execution role** (pull the image, write logs, read the named secrets only) and **task role** (read-only on the two buckets and the secrets it needs). No wildcard resources.
+- **Task execution role** (pull the image, write logs, read the named secrets only) and **task role** (read-only on the lake and registry buckets; it never reads secrets, because ECS injects them at start through the execution role). No wildcard resources, except for the two kinds of action AWS defines without a resource: `ecr:GetAuthorizationToken` and the `ssmmessages` channel actions for ECS Exec.
 - **Human access** through IAM Identity Center or a named role with MFA; **no long-lived access keys** in the repository or on the machine.
 - **GitHub Actions** assumes a role by OpenID Connect (no stored keys), limited to this repository and branch; in Phase 22 that role can only run `plan`.
 - Separate roles for "push image" and "change infrastructure". Nothing runs as the account root.
@@ -135,4 +135,4 @@ Keep it where it is: the host (or a CI job) trains, applies the gates, writes th
 - **Public load balancer by default:** a domain, a certificate and a public endpoint for a demo nobody needs to reach from outside.
 
 ## 13. What is checked
-A unit test reads this document: required sections present, the cost figures only in the cost section, every diagram parses with Mermaid when its CLI is available, and no `.tf` file exists yet (Terraform arrives in Phase 22). Nothing here has been checked against AWS.
+A unit test reads this document: required sections present, the cost figures only in the cost section, every diagram parses with Mermaid when its CLI is available, and Terraform files exist only under `infrastructure/terraform` with no state or variable file next to them (Phase 22 tests the Terraform itself). Nothing here has been checked against AWS.

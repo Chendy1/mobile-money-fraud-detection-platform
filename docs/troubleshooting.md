@@ -286,3 +286,15 @@ The archive was altered or is damaged, or the target holds files. Nothing was wr
 
 **Dashboard container restarts, log shows `ModuleNotFoundError`**
 The image lacks a package the dashboard imports. Fixed for `joblib` (extra `dashboard-image`); rebuild with `docker compose -f docker-compose.prod.yml up --build -d`. Read the last lines of `docker compose -f docker-compose.prod.yml logs dashboard`.
+
+**`terraform validate` or `plan` reports an unsupported argument or a missing required one**
+The files were written without running the provider (Phase 22). Send the exact message; the fix is usually one line in `infrastructure/terraform`. Do not apply to "see if it works".
+
+**`terraform plan` asks for `owner`, `expires`, `monthly_budget_usd`, `budget_alert_email`**
+They have no default on purpose. Copy `terraform.tfvars.example` to `terraform.tfvars` (git-ignored) and fill them.
+
+**`plan` fails with `NoCredentialProviders` or an expired token**
+Your shell has no AWS credentials. Use a named or SSO profile (`$env:AWS_PROFILE = "name"`); never write keys into the repository.
+
+**`dev.ps1 tf-validate`: `terraform` is not recognised**
+Install the Terraform CLI and open a new PowerShell window. `winget install Hashicorp.Terraform` (TO VERIFY).

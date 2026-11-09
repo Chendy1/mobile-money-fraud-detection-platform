@@ -193,6 +193,9 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 ## AWS design (design only)
 How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, least-privilege roles, cost controls) is in [docs/aws-design.md](docs/aws-design.md). **Nothing was created or applied in AWS**; prices appear only where read from AWS pages, with sources.
 
+## Terraform (plan-only)
+`infrastructure/terraform` holds the AWS design as Terraform. **It has not been validated, planned or applied by the assistant**, and `apply` is not part of this project. See [docs/terraform.md](docs/terraform.md) for how to `validate` and `plan` it yourself without creating anything.
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Retraining guide](docs/retraining.md)
@@ -202,6 +205,7 @@ How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, 
 - [Load testing](docs/load-testing.md)
 - [Production-like local deployment](docs/deployment.md)
 - [AWS design](docs/aws-design.md)
+- [Terraform, plan-only](docs/terraform.md)
 - [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)

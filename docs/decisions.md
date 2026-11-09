@@ -33,6 +33,7 @@
 | [024](adr/ADR-024-load-testing.md) | Load testing: own open-loop tool, latency from intended start, ASSUMED targets | Accepted |
 | [025](adr/ADR-025-local-deployment.md) | Production-like local deployment: secrets as files, hardened compose, preflight, verify, backup and restore | Accepted |
 | [026](adr/ADR-026-aws-design.md) | AWS design (design only): ECS Fargate, S3, no public endpoint, sourced prices only | Accepted |
+| [027](adr/ADR-027-terraform-plan-only.md) | Terraform, plan-only: no apply, no state in git, wildcard IAM limited to two actions | Accepted |
 
 Decided in Phase 21: ECS on Fargate, not EKS (ADR-026).
 
@@ -47,6 +48,9 @@ Second compose file with Docker secrets as files, hardened containers, loopback 
 
 ## AWS design (Phase 21, ADR-026)
 Design only, nothing created. ECS Fargate, S3 for lake and registry, no database, no public endpoint by default (SSM port forward), retraining stays outside AWS, no Prometheus/Grafana move. Only sourced prices are quoted; the rest are "not verified". Gaps found: secrets as files vs env vars, registry/lake fetched from S3 at start, restart on promotion.
+
+## Terraform, plan-only (Phase 22, ADR-027)
+One root module for the Phase 21 design; no backend, no registry modules; CI runs `fmt` and `validate` only; `plan` by the owner with read-only credentials; `apply` outside the project's path. Secrets are empty containers (no value in state). The only wildcard IAM resources are the two actions AWS defines without one. Inputs that carry safety (owner, expiry, budget, email) have no default. Never validated or planned (provider registry not reachable from the sandbox): TO VERIFY.
 
 ## Rejected technologies
 Kubernetes, Airflow, Spark, Feast, deep learning. None earns its cost at this scale. Revisit only with a concrete need.

@@ -5,8 +5,8 @@ Each phase ends with tests, docs, a CHANGELOG entry, commits, and a stop for app
 
 **Productionization:** 13 Streaming simulation (done); 14 Monitoring (done); 15 Drift (done); 16 Gated retraining (done); 17 Dashboard (done); 18 Security hardening (done); 19 Load testing (done); 20 Production-like local deployment (done).
 
-**Cloud (optional):** 21 AWS design (done, design only); 22 Terraform (plan-only); 23 Cloud deployment doc and cost controls.
+**Cloud (optional):** 21 AWS design (done, design only); 22 Terraform (plan-only, done); 23 Cloud deployment doc and cost controls.
 
 **Delivery:** 24 Final docs; 25 Demo scripts; 26 Portfolio, resume, interview prep; 27 Evidence-based scorecard; 28 GitHub release.
 
-Status: Phases 0 to 21 complete. Phases 2 to 21 are verified in the assistant's sandbox only; see `docs/PROJECT_STATE.md` for what has been verified on the developer's machine.
+Status: Phases 0 to 22 complete. Phases 2 to 22 are verified in the assistant's sandbox only; see `docs/PROJECT_STATE.md` for what has been verified on the developer's machine.

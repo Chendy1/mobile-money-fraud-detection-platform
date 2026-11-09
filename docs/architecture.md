@@ -48,7 +48,7 @@ Time-based split, then rule baseline, Logistic Regression, Random Forest, LightG
 `docker-compose.prod.yml` adds to the Phase 12 layout: keys and TLS on the API, a password on the dashboard, secrets mounted as files, read-only containers without capabilities, resource limits, restart, rotating logs, loopback ports. `mmrisk.deploy` has the checks that run before (`preflight`) and after (`verify`) start and the backup and restore. Retraining and the registry stay on the host; containers mount them read-only. See [deployment.md](deployment.md) and ADR-025.
 
 ## Local vs optional cloud
-The design for the cloud side is in [aws-design.md](aws-design.md) (Phase 21; ECS Fargate, S3; design only).
+The design for the cloud side is in [aws-design.md](aws-design.md) (Phase 21; ECS Fargate, S3) and its plan-only Terraform in [terraform.md](terraform.md) (Phase 22).
 
 | Local (default) | Optional AWS (design, plan-only) | Reason |
 |---|---|---|
