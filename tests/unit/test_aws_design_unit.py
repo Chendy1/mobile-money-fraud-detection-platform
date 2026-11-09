@@ -82,13 +82,16 @@ def test_least_privilege_and_no_long_lived_keys_are_stated():
     assert "No wildcard" in iam
 
 
-def test_no_terraform_or_cloud_files_exist_before_phase_22():
+def test_terraform_files_live_only_in_the_plan_only_folder_with_no_state():
     skip = {".git", ".venv", "node_modules", "mlruns", ".ruff_cache"}
     found = [
         p for p in ROOT.rglob("*")
-        if p.suffix in (".tf", ".tfvars") and not (set(p.parts) & skip)
+        if (p.suffix in (".tf", ".tfvars", ".tfstate", ".tfplan") or p.name == ".terraform")
+        and not (set(p.parts) & skip)
     ]  # fmt: skip
-    assert found == []
+    folder = ROOT / "infrastructure" / "terraform"
+    assert found and all(folder in p.parents for p in found), found
+    assert not [p for p in found if p.suffix in (".tfvars", ".tfstate", ".tfplan")]
 
 
 def test_the_doc_and_repository_hold_no_account_ids_or_keys():
