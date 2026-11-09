@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars (git-ignored) and edit. Nothing here is a real value.
+owner              = "your-name"
+expires            = "2026-12-31"
+monthly_budget_usd = 20   # YOUR limit; 20 is only an example
+budget_alert_email = "you@example.com"
+
+# region and availability_zone default to us-east-1 / us-east-1a (ASSUMED).
+# desired_count stays 0 until the entrypoint script exists and you want a short live session.
