@@ -294,3 +294,22 @@ def test_the_example_variables_validate_against_the_declared_rules():
             rx = rx.replace("\\\\", "\\")
         assert re.search(rx, good), name
         assert not re.search(rx, bad), name
+
+
+def test_the_hourly_billed_endpoints_exist_only_in_a_session():
+    var = T["variable"]["endpoints_enabled"]
+    assert var["default"] is False and var["type"] == "bool"
+    network = SRC["network.tf"]
+    assert (
+        "for_each = var.endpoints_enabled ? toset(local.interface_endpoints) : toset([])" in network
+    )
+    # the free S3 gateway endpoint is not gated: it is not billed by the hour
+    gateway = of_type("aws_vpc_endpoint")["s3"]
+    assert "for_each" not in gateway and "count" not in gateway
+
+
+def test_a_task_cannot_be_requested_without_the_endpoints():
+    ecs = SRC["ecs.tf"]
+    assert ecs.count("precondition {") == 2
+    assert ecs.count("var.desired_count == 0 || var.endpoints_enabled") == 2
+    assert ecs.count("set endpoints_enabled = true first") == 2

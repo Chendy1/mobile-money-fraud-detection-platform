@@ -127,6 +127,12 @@ variable "secret_recovery_days" {
   }
 }
 
+variable "endpoints_enabled" {
+  description = "Create the interface endpoints. They bill by the hour even with no task running (docs/cloud-costs.md), so the default is false: turn them on for a session, off afterwards. Tasks cannot start without them."
+  type        = bool
+  default     = false
+}
+
 variable "enable_execute_command" {
   description = "Lets you reach a task with ECS Exec and an SSM port forward (the only way in)."
   type        = bool

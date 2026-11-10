@@ -47,7 +47,7 @@ def test_every_sourced_price_row_has_a_link_and_unverified_items_have_no_number(
     assert rows
     for r in rows:
         assert "](https://aws.amazon.com/" in r, r
-    unverified = re.search(r"\*\*Not verified, so no number is given:\*\*(.*)", costs).group(1)
+    unverified = re.search(r"\*\*Not priced in this document[^\n]*?\*\*(.*)", costs).group(1)
     assert "$" not in unverified and "Secrets Manager" in unverified
 
 

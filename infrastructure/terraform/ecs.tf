@@ -166,6 +166,13 @@ resource "aws_ecs_service" "api" {
     enable   = true
     rollback = true
   }
+
+  lifecycle {
+    precondition {
+      condition     = var.desired_count == 0 || var.endpoints_enabled
+      error_message = "Tasks cannot start without the interface endpoints: set endpoints_enabled = true first."
+    }
+  }
 }
 
 resource "aws_ecs_service" "dashboard" {
@@ -185,5 +192,12 @@ resource "aws_ecs_service" "dashboard" {
   deployment_circuit_breaker {
     enable   = true
     rollback = true
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.desired_count == 0 || var.endpoints_enabled
+      error_message = "Tasks cannot start without the interface endpoints: set endpoints_enabled = true first."
+    }
   }
 }

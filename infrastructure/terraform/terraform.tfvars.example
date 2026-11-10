@@ -6,3 +6,4 @@ budget_alert_email = "you@example.com"
 
 # region and availability_zone default to us-east-1 / us-east-1a (ASSUMED).
 # desired_count stays 0 until the entrypoint script exists and you want a short live session.
+# endpoints_enabled stays false (no hourly charge) except during a session; see docs/cloud-costs.md.

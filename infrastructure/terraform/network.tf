@@ -1,5 +1,7 @@
 # One VPC, one private subnet, no internet gateway, no NAT gateway, no public IPs.
 # Tasks reach AWS services only through endpoints (option B in docs/aws-design.md section 4).
+# The interface endpoints are created only while endpoints_enabled is true: they are the one
+# resource here that bills by the hour with nothing running.
 
 locals {
   name = var.project
@@ -92,7 +94,7 @@ resource "aws_vpc_endpoint" "s3" {
 }
 
 resource "aws_vpc_endpoint" "interface" {
-  for_each = toset(local.interface_endpoints)
+  for_each = var.endpoints_enabled ? toset(local.interface_endpoints) : toset([])
 
   vpc_id              = aws_vpc.main.id
   service_name        = "com.amazonaws.${var.region}.${each.key}"
