@@ -1,0 +1,25 @@
+{
+  "_about": "Prices read from AWS pages. 'page-example' means the number is printed in a pricing example on the page, because the page's rate table is not in the text a page reader gets; it is not confirmed as the current table rate. Nothing here is a quote. Recheck every row before relying on it.",
+  "prices": {
+    "fargate_vcpu_second": {"description": "Fargate Linux/x86 per vCPU-second", "amount": 0.000011244, "unit": "USD per vCPU-second", "region": "us-east-1", "source": "https://aws.amazon.com/fargate/pricing/", "read_on": "2026-11-06", "kind": "page-example"},
+    "fargate_gb_second": {"description": "Fargate Linux/x86 per GB-second of memory", "amount": 0.000001235, "unit": "USD per GB-second", "region": "us-east-1", "source": "https://aws.amazon.com/fargate/pricing/", "read_on": "2026-11-06", "kind": "page-example"},
+    "interface_endpoint_hour": {"description": "Interface VPC endpoint, per endpoint network interface (one zone) per hour", "amount": 0.01, "unit": "USD per endpoint-zone-hour", "region": "us-east-1", "source": "https://aws.amazon.com/privatelink/pricing/", "read_on": "2026-11-09", "kind": "page-example"},
+    "interface_endpoint_gb": {"description": "Interface endpoint data processed, first tier", "amount": 0.01, "unit": "USD per GB", "region": "not stated on the page", "source": "https://aws.amazon.com/privatelink/pricing/", "read_on": "2026-11-09", "kind": "page-rate"},
+    "secret_month": {"description": "Secrets Manager, per secret per month", "amount": 0.40, "unit": "USD per secret-month", "region": "not stated on the page", "source": "https://aws.amazon.com/secrets-manager/pricing/", "read_on": "2026-11-09", "kind": "page-example"},
+    "ecr_gb_month": {"description": "ECR private repository storage", "amount": 0.10, "unit": "USD per GB-month", "region": "not stated on the page", "source": "https://aws.amazon.com/ecr/pricing", "read_on": "2026-11-09", "kind": "page-example"},
+    "cwlogs_ingest_gb": {"description": "CloudWatch Logs standard ingestion", "amount": 0.50, "unit": "USD per GB", "region": "us-east-1", "source": "https://aws.amazon.com/cloudwatch/pricing/", "read_on": "2026-11-09", "kind": "page-example"},
+    "budget_action_day": {"description": "AWS Budgets, each action-enabled budget beyond the first two (alert-only budgets are free; this design has no actions)", "amount": 0.10, "unit": "USD per budget-day", "region": "not stated on the page", "source": "https://aws.amazon.com/aws-cost-management/aws-budgets/pricing", "read_on": "2026-11-09", "kind": "page-rate"},
+    "nat_gateway_hour": {"description": "NAT gateway per hour (comparison only; the design has none)", "amount": 0.045, "unit": "USD per hour", "region": "us-east-2 (as printed; us-east-1 not in the text)", "source": "https://aws.amazon.com/vpc/pricing/", "read_on": "2026-11-06", "kind": "page-rate"},
+    "public_ipv4_hour": {"description": "Public IPv4 address per hour (comparison only; the design has none)", "amount": 0.005, "unit": "USD per hour", "region": "not stated on the page", "source": "https://aws.amazon.com/vpc/pricing/", "read_on": "2026-11-06", "kind": "page-rate"}
+  },
+  "not_priced": [
+    "S3 storage and requests (the US East price table could not be read)",
+    "Data transfer to or from the internet and between zones",
+    "CloudWatch Logs storage after ingestion",
+    "ECS Exec and SSM Session Manager",
+    "VPC, subnet, route table and security groups, and the S3 gateway endpoint (believed free; not verified)",
+    "Secrets Manager API calls (the example price is $0.05 per 10,000 calls; the count is not estimated)",
+    "Free Tier and credits (new accounts: the Secrets Manager page says up to $200 in credits from 2025-07-15; eligibility and expiry not verified). None is applied in any estimate.",
+    "Taxes, support plans, and any price change after the date read"
+  ]
+}
