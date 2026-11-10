@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc deploy-init preflight up-prod down-prod verify backup tf-validate
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc deploy-init preflight up-prod down-prod verify backup tf-validate cost
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
 lint:
@@ -115,3 +115,6 @@ tf-validate:
 	terraform -chdir=infrastructure/terraform fmt -check -diff
 	terraform -chdir=infrastructure/terraform init -backend=false -input=false
 	terraform -chdir=infrastructure/terraform validate
+
+cost:
+	python -m mmrisk.cloudcost estimate

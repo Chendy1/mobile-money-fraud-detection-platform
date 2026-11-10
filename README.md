@@ -196,6 +196,9 @@ How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, 
 ## Terraform (plan-only)
 `infrastructure/terraform` holds the AWS design as Terraform. **It has not been validated, planned or applied by the assistant**, and `apply` is not part of this project. See [docs/terraform.md](docs/terraform.md) for how to `validate` and `plan` it yourself without creating anything.
 
+## Cloud costs and runbook
+[docs/cloud-costs.md](docs/cloud-costs.md) estimates what the AWS design would cost from prices read on AWS pages (lower bounds, mostly page examples, with what is not priced listed); `python -m mmrisk.cloudcost estimate` reproduces it. [docs/cloud-deployment.md](docs/cloud-deployment.md) is a session-based runbook with a teardown. **Nothing was applied or run in AWS.**
+
 ## Documentation
 - [Architecture](docs/architecture.md)
 - [Retraining guide](docs/retraining.md)
@@ -206,6 +209,8 @@ How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, 
 - [Production-like local deployment](docs/deployment.md)
 - [AWS design](docs/aws-design.md)
 - [Terraform, plan-only](docs/terraform.md)
+- [Cloud costs and controls](docs/cloud-costs.md)
+- [Cloud deployment runbook](docs/cloud-deployment.md)
 - [Security guide](docs/security.md)
 - [Threat model](docs/threat-model.md)
 - [Data quality](docs/data-quality.md)

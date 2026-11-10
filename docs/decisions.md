@@ -34,6 +34,7 @@
 | [025](adr/ADR-025-local-deployment.md) | Production-like local deployment: secrets as files, hardened compose, preflight, verify, backup and restore | Accepted |
 | [026](adr/ADR-026-aws-design.md) | AWS design (design only): ECS Fargate, S3, no public endpoint, sourced prices only | Accepted |
 | [027](adr/ADR-027-terraform-plan-only.md) | Terraform, plan-only: no apply, no state in git, wildcard IAM limited to two actions | Accepted |
+| [028](adr/ADR-028-cloud-cost-controls.md) | Cloud cost controls: endpoints gated, estimator with sourced prices, session runbook | Accepted |
 
 Decided in Phase 21: ECS on Fargate, not EKS (ADR-026).
 

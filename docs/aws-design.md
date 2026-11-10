@@ -108,10 +108,10 @@ Keep it where it is: the host (or a CI job) trains, applies the gates, writes th
 - The same API task for 8 hours: about $0.39 (8 x about $0.0494 per hour).
 - One NAT gateway left running all month: about $32.85 before any data charge. One public IPv4 address: about $3.65.
 
-**Not verified, so no number is given:** Secrets Manager, KMS, ECR storage, S3 storage and requests, CloudWatch Logs ingestion and storage, interface VPC endpoints, load balancers, AWS Budgets, data transfer, Cape Town prices, free-tier eligibility. The project's rule stands: no cost is stated until a pricing page has been read. Phase 23 reads those before the cost guide is written.
+**Not priced in this document (Phase 23 reads them in [cloud-costs.md](cloud-costs.md), with their own caveats):** Secrets Manager, KMS, ECR storage, S3 storage and requests, CloudWatch Logs, interface VPC endpoints, load balancers, AWS Budgets, data transfer, Cape Town prices, free-tier eligibility. The project's rule stands: no cost is stated until a pricing page has been read.
 
 **Controls designed in:**
-- Nothing runs by default; `desired count = 0` is the resting state, and a teardown is a single documented command in Phase 23.
+- Nothing runs by default; `desired count = 0` is the resting state. Phase 23 found that the interface endpoints bill by the hour even then, so they are now off by default too (`endpoints_enabled`); see [cloud-costs.md](cloud-costs.md) and the session and teardown steps in [cloud-deployment.md](cloud-deployment.md).
 - No NAT gateway unless chosen, no load balancer, no RDS, no multi-AZ, no reserved capacity.
 - An AWS Budgets budget with email alerts at fixed fractions of a limit you choose (budget rules and the alert delay are **TO VERIFY**; a budget alerts, it does not stop spend).
 - Tags with an expiry date, a weekly look at the bill, log retention set, bucket lifecycle rules, image tags cleaned from ECR.

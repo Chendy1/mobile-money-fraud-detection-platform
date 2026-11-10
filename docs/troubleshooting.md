@@ -298,3 +298,12 @@ Your shell has no AWS credentials. Use a named or SSO profile (`$env:AWS_PROFILE
 
 **`dev.ps1 tf-validate`: `terraform` is not recognised**
 Install the Terraform CLI and open a new PowerShell window. `winget install Hashicorp.Terraform` (TO VERIFY).
+
+**`python -m mmrisk.cloudcost estimate` says `cannot read prices file`**
+Run it from the project folder (the default path is `infrastructure/cost/prices.json`) or pass `--prices`.
+
+**`terraform plan` fails the precondition "set endpoints_enabled = true first"**
+You asked for a task (`desired_count` 1) while the interface endpoints are off. Turn them on for the session (`-var endpoints_enabled=true`) and off afterwards; see `docs/cloud-deployment.md`.
+
+**The cost document test fails after you changed a price**
+Totals and dollar figures in `docs/cloud-costs.md` must equal what `python -m mmrisk.cloudcost estimate` prints. Re-run it and update the page.
