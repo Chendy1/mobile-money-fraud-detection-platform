@@ -22,3 +22,5 @@ They parse the HCL and check: every reference resolves and every variable is use
 - Remote state: a bucket and a lock table to create before anything else, for one person.
 - A NAT gateway or public subnets by default (ADR-026).
 - `apply` in CI: no credentials in CI, no account decision.
+
+**Update 2026-11-11.** The CI `terraform` job (Terraform 1.9.8: `fmt -check`, `init -backend=false`, `validate`) passed in run 42930127418. `plan` and `apply` have still never been run. See [verification-status.md](../verification-status.md).

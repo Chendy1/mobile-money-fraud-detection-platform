@@ -7,6 +7,6 @@ Each phase ends with tests, docs, a CHANGELOG entry, commits, and a stop for app
 
 **Cloud (optional):** 21 AWS design (done, design only); 22 Terraform (plan-only, done); 23 Cloud deployment doc and cost controls (done).
 
-**Delivery:** 24 Final docs; 25 Demo scripts; 26 Portfolio, resume, interview prep; 27 Evidence-based scorecard; 28 GitHub release.
+**Delivery:** 24 Final docs (done); 25 Demo scripts; 26 Portfolio, resume, interview prep; 27 Evidence-based scorecard; 28 GitHub release.
 
-Status: Phases 0 to 23 complete. Phases 2 to 23 are verified in the assistant's sandbox only; see `docs/PROJECT_STATE.md` for what has been verified on the developer's machine.
+Status: Phases 0 to 24 complete. Phases 2 to 24 were built and tested in the assistant's sandbox; CI (Ubuntu) runs the whole suite, builds the images and validates the Terraform; a subset was run on the developer's Windows machine. Exactly what, and what not: [verification-status.md](verification-status.md).

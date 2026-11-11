@@ -8,12 +8,12 @@ One command set that runs the API and the dashboard the way a small production s
 | Item | Status |
 |---|---|
 | Secret creation, preflight rules, verify checks, backup and restore | Tested (unit tests and a real API process started with the compose file's command line, TLS and keys on). In the assistant's Linux sandbox. |
-| The compose file as a file (rules: read-only, no capabilities, loopback ports, limits, secrets as files, no literal secrets) | Tested as a file; `docker compose config` run only in CI (TO VERIFY first result) |
+| The compose file as a file (rules: read-only, no capabilities, loopback ports, limits, secrets as files, no literal secrets) | Tested as a file. `docker compose config` and the file's own preflight rules **pass in CI** (run 42930127418, 2026-11-11) |
 | `docker compose up --build`, API image and its TLS health check | **Verified on the developer's Windows machine (Docker Desktop):** built, healthy, `deploy verify` 12 of 12 passed against the container |
-| Dashboard image | First run crashed (`No module named 'joblib'`: the registry reader needs scikit-learn). Fixed in the image (extra `dashboard-image`) and guarded by a test; the rebuilt container is TO VERIFY |
+| Dashboard image | Builds in CI and runs as user 10001. First run on the developer's machine crashed (`No module named 'joblib'`: the registry reader needs scikit-learn). Fixed in the image (extra `dashboard-image`) and guarded by a test; the rebuilt container is TO VERIFY |
 | Reading `/app/data/audit` and secret files as user 10001 on Linux hosts | TO VERIFY (see "Permissions") |
 | Prometheus scraping `https://api:8443/metrics` with the metrics key; Grafana with a password file | TO VERIFY |
-| Windows behaviour of the `deploy` commands (init, preflight, verify, backup, restore) | TO VERIFY (the unit tests pass in the sandbox only) |
+| Windows behaviour of the `deploy` commands | `init`, `preflight` and `verify` were run on the developer's Windows machine (verify: 12 of 12 against the container). `backup` and `restore` on Windows: TO VERIFY (unit and integration tests pass in the sandbox and CI only) |
 
 ## 1. Prerequisites
 - A trained model in the registry (`models\registry`, Phase 16: `dev.ps1 regboot`, or a retraining run) and the processed lake (`data\processed`, Phase 3).

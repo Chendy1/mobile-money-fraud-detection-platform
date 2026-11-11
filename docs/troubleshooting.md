@@ -307,3 +307,18 @@ You asked for a task (`desired_count` 1) while the interface endpoints are off. 
 
 **The cost document test fails after you changed a price**
 Totals and dollar figures in `docs/cloud-costs.md` must equal what `python -m mmrisk.cloudcost estimate` prints. Re-run it and update the page.
+
+**CI is red and you do not know why**
+List the runs, then print the end of the failing step's log (the error is at the bottom; the top is runner start-up):
+```powershell
+gh run list --limit 5
+gh run view <run-id>                                        # which job and step failed
+gh run view <run-id> --job <job-id> --log-failed | Select-Object -Last 40
+```
+Do not guess from the step name. In Phase 20 the step "The production-like compose file is valid..." failed for five pushes; the last 40 lines showed `ModuleNotFoundError: No module named 'joblib'`, which a guess about Python setup had missed.
+
+**`No module named 'joblib'` (or another library) from `python -m mmrisk.deploy ...` in a fresh environment**
+The `deploy` extra must contain what the deploy commands import (everything in `serve`, plus `cryptography` and `pyyaml`). Install `".[deploy]"` and not just `cryptography`. A test (`tests/unit/test_ci_workflow_unit.py`) fails if the extra falls behind `serve`. Reproduce a bug like this in a clean virtual environment, not in your development one, which has everything installed.
+
+**CI shows "Node.js 20 is deprecated" annotations**
+Warnings only. They name `actions/checkout`, `actions/setup-python` and `hashicorp/setup-terraform`; bump the pinned major versions when newer ones exist (TO VERIFY which).

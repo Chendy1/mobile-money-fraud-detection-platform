@@ -37,10 +37,11 @@ The step-by-step runbook for an eventual apply, with costs and teardown, is [clo
 4. A teardown plan: `destroy` stops on non-empty buckets (`force_destroy = false`), secrets stay recoverable for the recovery window, ECR repositories keep images. That is deliberate.
 
 ## Known limits and TO VERIFY
+- **Status:** `validate` passes in CI (Terraform 1.9.8, provider `~> 5.0` downloaded, no credentials). `plan` and `apply` have never been run by anyone; the resource count and every AWS behaviour below are unconfirmed.
 - `validate` and `plan` never ran. Argument names for provider `~> 5.0` (security group rules, ECR `force_delete`, budgets notifications, S3 versioning `Disabled` on a new bucket) are from memory.
 - Fargate: sizes for `api_cpu` and memory, dropping all capabilities, volumes standing in for `tmpfs`, and reaching a private task by SSM port forward are TO VERIFY (ADR-026).
 - Interface endpoints in a single zone: some services may not offer every zone (TO VERIFY).
 - Only one zone and one task of each service: no failover (stated non-goal).
 - No GitHub OpenID Connect role yet: CI only runs `fmt` and `validate`; `plan` is run by you.
 - Local state is the only option set up. State holds resource ids; it is git-ignored. Remote state would need a bucket and a lock, which this phase leaves out on purpose.
-- `terraform fmt` was checked with OpenTofu 1.10 in the sandbox; the Terraform CLI's formatting may differ in small ways (CI runs the Terraform CLI, first result TO VERIFY).
+- `terraform fmt` was checked with OpenTofu 1.10 in the sandbox; the Terraform CLI's formatting may differ in small ways (CI runs the Terraform CLI 1.9.8: `fmt -check`, `init -backend=false` and `validate` **passed** in run 42930127418, 2026-11-11, so the formatting question is settled for that version).
