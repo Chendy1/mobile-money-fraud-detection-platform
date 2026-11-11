@@ -4,13 +4,38 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phase 17 complete (dashboard). Security hardening comes next. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phases 0 to 24 complete (see [roadmap](docs/roadmap.md)). CI is green: lint, the full test suite, Docker image builds, Terraform `validate`. What was checked where, and what was not, is in [docs/verification-status.md](docs/verification-status.md); known limits are in [docs/limitations.md](docs/limitations.md). Every doc is listed in [docs/index.md](docs/index.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
 
-## Planned capabilities
-Synthetic data generator, data lake (raw/validated/cleaned), data quality checks, EDA, point-in-time-safe features, model comparison (rules, Logistic Regression, Random Forest, LightGBM), SHAP explainability, MLflow tracking, FastAPI inference, event simulation, Docker Compose, monitoring and drift detection, gated retraining, Streamlit dashboard, CI, and optional AWS design (Terraform, plan-only).
+## What it does
+A synthetic data generator with delayed, noisy labels; a layered data lake with quarantine and data-quality checks; point-in-time-safe features (28, one library for training and serving); model comparison (rules, logistic regression, random forest, LightGBM) on a leak-safe time split; Platt calibration and an expected-cost rule that turns a probability into ALLOW, REVIEW or BLOCK; exact tree explanations and a model card; MLflow tracking; a FastAPI scoring service with API keys, TLS, rate limits and an audit log; an event-stream simulator; Prometheus and Grafana monitoring, drift detection and gated retraining over a file model registry; a read-only Streamlit dashboard; load testing; a hardened production-like Docker Compose deployment with backup and restore; and an AWS design with plan-only Terraform and a cost estimator. Nothing runs in the cloud.
+
+## Results at a glance
+Synthetic data, seed 42, test window 2025-10-02 to 2025-11-16 (24,224 transactions, 107 fraud-labelled, 0.44%). Source: [model card](docs/model-card.md), generated from the saved results.
+
+| Scorer | Test PR-AUC | Cost per 10,000 transactions (ASSUMED costs, KES) |
+|---|---|---|
+| Random scorer | 0.004 | n/a |
+| Hand-written rules | 0.161 | 61,519 |
+| Logistic regression | 0.515 | 39,397 |
+| Random forest | 0.552 | 44,045 |
+| LightGBM (shipped) | 0.502 | 37,935 |
+
+How to read this: with 107 frauds the intervals are wide and the three trained models are **not** separable; LightGBM is shipped for its exact explanations and missing-history handling, not for rank. Allowing everything costs 70,126 under the assumed costs, so the policy is 46% lower, which is a statement about the assumptions, not about money. Latency and load figures (one run each, 2 shared CPUs) are in [docs/load-testing.md](docs/load-testing.md). None of this says anything about real fraud.
+
+## Architecture
+```mermaid
+flowchart LR
+  G[Generator] --> L[(Layered lake)] --> F[Feature library] --> T[Train, calibrate, cost rule]
+  T --> R[(File model registry)] --> A[FastAPI scoring: keys, TLS, audit]
+  S[Stream simulator] --> A --> P[(Prediction store)]
+  P --> D[Dashboard]
+  P --> M[Monitoring and drift] --> RT[Gated retraining] --> R
+  A -->|/metrics| PG[Prometheus and Grafana]
+```
+Full diagram, data flow and the AWS mapping: [docs/architecture.md](docs/architecture.md).
 
 ## Stack (summary)
 Python 3.12, Polars, DuckDB + Parquet, scikit-learn, LightGBM, SHAP, MLflow, FastAPI, Streamlit, Prometheus + Grafana, Docker Compose, pytest, ruff, GitHub Actions, Terraform (optional). Rationale: [docs/decisions.md](docs/decisions.md). (Evidently was replaced by a small tested PSI implementation; see [ADR-020](docs/adr/ADR-020-drift-detection.md).)
@@ -126,7 +151,7 @@ The same API in a locked-down container: read-only filesystem, no capabilities, 
 .\scripts\dev.ps1 smoke        # checks that cannot change the service's state
 .\scripts\dev.ps1 down
 ```
-Docs are at http://127.0.0.1:8000/docs. Before a first run on an 8 GB machine, cap WSL2's memory (see [troubleshooting](docs/troubleshooting.md)) and stop containers you do not need. The container build and run were not executed by the assistant (its sandbox cannot reach Docker Hub); the first run on your machine is the check. Design and limits: [ADR-017](docs/adr/ADR-017-container-packaging.md).
+Docs are at http://127.0.0.1:8000/docs. Before a first run on an 8 GB machine, cap WSL2's memory (see [troubleshooting](docs/troubleshooting.md)) and stop containers you do not need. CI builds this image and checks that it runs as a non-root user; the stricter production-like variant below was run on the author's Docker Desktop. Design and limits: [ADR-017](docs/adr/ADR-017-container-packaging.md).
 
 ## Streaming simulation
 Replays stored transactions as a live feed through a bounded queue, with seeded delivery faults (late and reordered events, repeats, corrupted copies), a reorder buffer, and scoring either in process or through the running API. Predictions are appended to `data/predictions` (see [prediction store](docs/prediction-store.md)).
@@ -194,43 +219,18 @@ API keys with roles, rate limits, an audit log, optional TLS, a dashboard login,
 How the local deployment would map to AWS (ECS Fargate, S3, no public endpoint, least-privilege roles, cost controls) is in [docs/aws-design.md](docs/aws-design.md). **Nothing was created or applied in AWS**; prices appear only where read from AWS pages, with sources.
 
 ## Terraform (plan-only)
-`infrastructure/terraform` holds the AWS design as Terraform. **It has not been validated, planned or applied by the assistant**, and `apply` is not part of this project. See [docs/terraform.md](docs/terraform.md) for how to `validate` and `plan` it yourself without creating anything.
+`infrastructure/terraform` holds the AWS design as Terraform. **CI runs `fmt`, `init -backend=false` and `validate` on it (passing); it has never been planned or applied by anyone**, and `apply` is not part of this project. See [docs/terraform.md](docs/terraform.md) for how to `validate` and `plan` it yourself without creating anything.
 
 ## Cloud costs and runbook
 [docs/cloud-costs.md](docs/cloud-costs.md) estimates what the AWS design would cost from prices read on AWS pages (lower bounds, mostly page examples, with what is not priced listed); `python -m mmrisk.cloudcost estimate` reproduces it. [docs/cloud-deployment.md](docs/cloud-deployment.md) is a session-based runbook with a teardown. **Nothing was applied or run in AWS.**
 
 ## Documentation
-- [Architecture](docs/architecture.md)
-- [Retraining guide](docs/retraining.md)
-- [Dashboard guide](docs/dashboard.md)
-- [Decisions (ADR index)](docs/decisions.md)
-- [Roadmap](docs/roadmap.md)
-- [Load testing](docs/load-testing.md)
-- [Production-like local deployment](docs/deployment.md)
-- [AWS design](docs/aws-design.md)
-- [Terraform, plan-only](docs/terraform.md)
-- [Cloud costs and controls](docs/cloud-costs.md)
-- [Cloud deployment runbook](docs/cloud-deployment.md)
-- [Security guide](docs/security.md)
-- [Threat model](docs/threat-model.md)
-- [Data quality](docs/data-quality.md)
-- [EDA report](docs/eda-report.md)
-- [Feature catalog](docs/feature-catalog.md)
-- [Baseline models](docs/model-baselines.md)
-- [Advanced model and decisions](docs/model-advanced.md)
-- [Cost model (assumed)](docs/cost-model.md)
-- [Model explanations](docs/model-explanations.md)
+Start at [docs/index.md](docs/index.md), the map of every document. The ones to read first:
+- [Verification status](docs/verification-status.md): what was checked, where, and what was not
+- [Limitations and open items](docs/limitations.md)
+- [Architecture](docs/architecture.md) and [decisions (ADR index)](docs/decisions.md)
 - [Model card](docs/model-card.md)
-- [Prediction store](docs/prediction-store.md)
-- [Monitoring guide](docs/monitoring.md)
-- [Drift guide](docs/drift.md)
-- [Data dictionary](docs/data-dictionary.md)
-- [Testing](docs/testing.md)
-- [Troubleshooting](docs/troubleshooting.md)
-- [Project state](docs/PROJECT_STATE.md)
-
-## Results, API, demo
-To be added as phases are completed. Nothing is claimed until it has been run and verified.
+- [Testing](docs/testing.md), [troubleshooting](docs/troubleshooting.md) and [project state](docs/PROJECT_STATE.md)
 
 ## License
 Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Copyright 2026 Clyde Adili.
