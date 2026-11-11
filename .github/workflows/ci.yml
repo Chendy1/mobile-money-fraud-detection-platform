@@ -46,6 +46,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The runner's system Python is externally managed (PEP 668): a bare `pip install` is refused.
+      # The production-like step below installs the package, so it needs its own interpreter.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Build the image
         run: docker build -t mmrisk-api:ci .
       - name: LightGBM imports (needs the OpenMP runtime) and the CLI starts
