@@ -18,7 +18,7 @@ One command set that runs the API and the dashboard the way a small production s
 ## 1. Prerequisites
 - A trained model in the registry (`models\registry`, Phase 16: `dev.ps1 regboot`, or a retraining run) and the processed lake (`data\processed`, Phase 3).
 - Docker Desktop running (WSL2). Stop other containers first; the stack is limited to about 1.4 GB of memory plus the optional monitoring (0.75 GB).
-- The package with the `deploy` extra: `.\.venv\Scripts\python -m pip install -e ".[deploy]"` (adds `cryptography` and `pyyaml`).
+- The package with the `deploy` extra: `.\.venv\Scripts\python -m pip install -e ".[deploy]"` (adds `cryptography` and `pyyaml`, plus the same libraries the API image installs: `preflight` loads the model and `verify` imports the API package).
 
 ## 2. Make the secrets (once)
 ```powershell

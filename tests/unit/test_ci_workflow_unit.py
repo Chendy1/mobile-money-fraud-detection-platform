@@ -19,3 +19,13 @@ def test_every_job_that_runs_pip_sets_up_python_first():
         pips = [i for i, s in enumerate(steps) if "pip install" in str(s.get("run", ""))]
         if pips:
             assert uses and min(uses) < min(pips), f"job {name} runs pip without setup-python first"
+
+
+def test_the_deploy_extra_holds_everything_the_deploy_commands_import():
+    import tomllib
+
+    extras = tomllib.loads((CI.parents[2] / "pyproject.toml").read_text())["project"][
+        "optional-dependencies"
+    ]
+    assert set(extras["serve"]) <= set(extras["deploy"])  # preflight/verify import the API package
+    assert {"cryptography>=42", "pyyaml>=6"} <= set(extras["deploy"])

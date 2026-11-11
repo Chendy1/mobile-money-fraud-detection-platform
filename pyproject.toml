@@ -35,10 +35,15 @@ api = ["fastapi>=0.110", "uvicorn>=0.29", "httpx>=0.27", "prometheus-client>=0.2
 dashboard = ["streamlit>=1.40"]
 # what the dashboard container installs: the page plus the registry reader, which imports the model bundle (scikit-learn brings joblib)
 dashboard-image = ["streamlit>=1.40", "scikit-learn>=1.4"]
-# making a TLS certificate and checking its expiry for the production-like deployment (Phase 20)
-deploy = ["cryptography>=42", "pyyaml>=6"]
 # the smallest set that can serve a saved model (the container image installs only this)
 serve = [
+    "scikit-learn>=1.4", "lightgbm>=4.0", "fastapi>=0.110", "uvicorn>=0.29", "prometheus-client>=0.20",
+]
+# the production-like deployment commands (Phase 20): the TLS certificate and the compose file reader,
+# plus everything in `serve`, because preflight loads the model and parses the API's command line and
+# verify imports the API package. Keep this a superset of `serve` (a test checks it).
+deploy = [
+    "cryptography>=42", "pyyaml>=6",
     "scikit-learn>=1.4", "lightgbm>=4.0", "fastapi>=0.110", "uvicorn>=0.29", "prometheus-client>=0.20",
 ]
 
