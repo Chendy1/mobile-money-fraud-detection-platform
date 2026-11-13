@@ -68,3 +68,4 @@ select = ["E", "F", "I", "UP", "B"]
 "src/mmrisk/models/advanced_report.py" = ["E501"]
 "src/mmrisk/models/explain_report.py" = ["E501"]
 "src/mmrisk/models/model_card.py" = ["E501"]
+"src/mmrisk/demo/steps.py" = ["E501"]  # the talking points are prose
