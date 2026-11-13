@@ -29,6 +29,7 @@ Every document in `docs/`, grouped by what you want to know. Start with the firs
 - [Retraining](retraining.md)
 - [Dashboard](dashboard.md)
 - [Load testing](load-testing.md)
+- [Demo scripts](demo.md): a 5-minute and a 15-minute guided demo that runs the real commands
 
 ## Security and deployment
 - [Security guide](security.md) and [threat model](threat-model.md)
@@ -73,3 +74,4 @@ Every document in `docs/`, grouped by what you want to know. Start with the firs
 - [ADR-026: AWS design (design only)](adr/ADR-026-aws-design.md)
 - [ADR-027: Terraform, plan-only](adr/ADR-027-terraform-plan-only.md)
 - [ADR-028: Cloud cost controls and an estimator with sourced prices](adr/ADR-028-cloud-cost-controls.md)
+- [ADR-029: A guided demo that runs the real commands and checks what they show](adr/ADR-029-guided-demo.md)

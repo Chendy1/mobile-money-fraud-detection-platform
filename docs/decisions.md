@@ -35,6 +35,7 @@
 | [026](adr/ADR-026-aws-design.md) | AWS design (design only): ECS Fargate, S3, no public endpoint, sourced prices only | Accepted |
 | [027](adr/ADR-027-terraform-plan-only.md) | Terraform, plan-only: no apply, no state in git, wildcard IAM limited to two actions | Accepted |
 | [028](adr/ADR-028-cloud-cost-controls.md) | Cloud cost controls: endpoints gated, estimator with sourced prices, session runbook | Accepted |
+| [029](adr/ADR-029-guided-demo.md) | Guided demo: a tested Python module (steps as data, output checked, writes only `data/demo/`), started by thin `dev.ps1` tasks | Accepted |
 
 Decided in Phase 21: ECS on Fargate, not EKS (ADR-026).
 

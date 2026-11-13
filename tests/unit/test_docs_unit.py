@@ -102,3 +102,22 @@ def test_the_verification_and_limitations_pages_exist_with_their_sections():
     lim = (DOCS / "limitations.md").read_text(encoding="utf-8")
     for part in ("## What the project is not", "## Evaluation limits", "## Open items"):
         assert part in lim
+
+
+def test_figures_quoted_in_the_readme_and_the_demo_guide_are_in_the_model_card():
+    card = (DOCS / "model-card.md").read_text(encoding="utf-8")
+    # (file, the text it quotes, the text the model card must contain for that figure)
+    quoted = [
+        ("README.md", "107 fraud-labelled", "107 fraud-labelled"),
+        ("README.md", "24,224", "24,224"),
+        ("README.md", "0.502", "0.502"),
+        ("README.md", "0.552", "0.552"),
+        ("README.md", "70,126", "70,126"),
+        ("README.md", "46%", "46%"),
+        ("docs/demo.md", "107 frauds", "107 in the test window"),
+    ]
+    for path, quote, in_card in quoted:
+        assert quote in (ROOT / path).read_text(encoding="utf-8"), (
+            f"{path} no longer quotes {quote}"
+        )
+        assert in_card in card, f"{quote} (quoted in {path}) is not in the model card"
