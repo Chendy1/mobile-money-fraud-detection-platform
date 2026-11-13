@@ -34,4 +34,5 @@ Read this before reading any number in the repository. Each limit says what it c
 5. Older-library test set not re-run after Phase 21.
 6. Slow Windows test suite (cause not investigated).
 7. CI Node.js 20 deprecation warnings: bump the pinned action versions.
-8. Repeat the evaluation across several seeds before quoting any single number as typical.
+8. Run the guided demo on Windows (`dev.ps1 demo-check`, `demo`) and report what happens; its timings were measured once in the sandbox.
+9. Repeat the evaluation across several seeds before quoting any single number as typical.

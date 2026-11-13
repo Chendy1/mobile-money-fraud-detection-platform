@@ -38,10 +38,11 @@ Annotations that remain in CI and are only warnings: Node.js 20 deprecation for 
 
 | Item | Result |
 |---|---|
-| Full test suite | 1075 passed, 2 skipped in 7 min 15 s (the skips need `promtool` and a Terraform binary, absent in the sandbox), run on 2026-11-12 before the docs tests existed; the 65 docs-test cases in `tests/unit/test_docs_unit.py` were run separately and passed. Expect 1140 passed in CI. This is the only full-suite number from the sandbox; the earlier counts in PROJECT_STATE are historical |
+| Full test suite | 1185 passed, 2 skipped in 7 min 3 s, run on 2026-11-13 (the skips need `promtool` and a Terraform binary, absent in the sandbox); one docs test added after that run started passed separately, so expect 1186 passed in CI. This is the only full-suite number from the sandbox; the counts in PROJECT_STATE are historical |
 | Lint | `ruff check` and `ruff format --check` clean on the files changed in each phase |
 | Mutation checks | each phase deliberately broke the code in specific ways and confirmed a test failed (counts are in the phase's CHANGELOG entry); this is a check on the tests, not a proof |
 | Measurements (latency, load, memory) | one run each on 2 shared CPUs; see [load-testing.md](load-testing.md) for what they do and do not show |
+| Guided demo (Phase 25) | `python -m mmrisk.demo run --yes` against a lake and a `--quick`-trained model: 12 of 12 steps ok in 37 s; its real commands also run in an integration test (13 tests) |
 | Older and newer libraries | the suite also passed on older (Polars 1.12.0, scikit-learn 1.5.2, numpy 2.1.3, Python 3.13) and newer (Polars 2.0.0, scikit-learn 1.9.1) versions up to Phase 21; **not re-run for Phases 22 and 23** |
 
 ## Not verified (TO VERIFY)
@@ -54,6 +55,7 @@ Annotations that remain in CI and are only warnings: Node.js 20 deprecation for 
 | Secret-file and audit-folder permissions on Linux and WSL hosts | not run (see [deployment.md](deployment.md)) |
 | Terraform `plan` and `apply` | never run; `validate` only. No AWS account was used. Cost figures are estimates from sourced prices (lower bounds), not bills |
 | `/app/aws-entrypoint.sh` | the ECS task definitions reference it; it is not written (a known gap, see [aws-design.md](aws-design.md)) |
+| The demo on Windows and the `dev.ps1 demo*` tasks | never run in PowerShell; `python -m mmrisk.demo ...` is the same code and is the tested path (TO VERIFY) |
 | Compose `simulator` service (profile `simulate`) | not run |
 | Container image scanning, image digest pinning, Alertmanager | not done |
 | Real-world fraud performance | not applicable: synthetic data only |

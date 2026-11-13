@@ -322,3 +322,9 @@ The `deploy` extra must contain what the deploy commands import (everything in `
 
 **CI shows "Node.js 20 is deprecated" annotations**
 Warnings only. They name `actions/checkout`, `actions/setup-python` and `hashicorp/setup-terraform`; bump the pinned major versions when newer ones exist (TO VERIFY which).
+
+**`dev.ps1 demo-check` says `MISSING` for a model, registry or lake**
+Run the command printed after `fix:` (`dev.ps1 generate`, `ingest`, `advanced`, `regboot`, `card`). The demo does not make them because the model step takes minutes.
+
+**A demo step says `UNEXPECTED: output lacks ...`**
+The command ran but its output did not contain what the step is meant to show, so the demo will not call it a pass. Read the output printed above the verdict. `python -m mmrisk.demo clean` removes the demo's own outputs (only `data/demo`) before a retry.
