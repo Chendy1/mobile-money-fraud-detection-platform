@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
 # Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc | deploy-init | preflight | up-prod | down-prod | verify | backup | tf-validate | cost
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup", "tf-validate", "cost")][string]$Task)
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup", "tf-validate", "cost", "demo", "demo-full", "demo-check", "demo-clean")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -51,6 +51,11 @@ switch ($Task) {
     "loadtest" { & $venvPython -m mmrisk.loadtest bench --profile step --rates 10,25,50,75,100,125,150 --step-seconds 8 --last-days 14 }
     "inproc" { & $venvPython -m mmrisk.loadtest inproc }
     "cost" { & $venvPython -m mmrisk.cloudcost estimate }
+    # guided demo (Enter between steps): demo = the short track, demo-full = every step
+    "demo" { & $venvPython -m mmrisk.demo run --track short }
+    "demo-full" { & $venvPython -m mmrisk.demo run --track standard }
+    "demo-check" { & $venvPython -m mmrisk.demo check }
+    "demo-clean" { & $venvPython -m mmrisk.demo clean }
     "tf-validate" {
         # needs the terraform CLI; makes no AWS call and needs no credentials
         terraform -chdir=infrastructure/terraform fmt -check -diff
