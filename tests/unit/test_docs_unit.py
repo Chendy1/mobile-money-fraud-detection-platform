@@ -121,3 +121,13 @@ def test_figures_quoted_in_the_readme_and_the_demo_guide_are_in_the_model_card()
             f"{path} no longer quotes {quote}"
         )
         assert in_card in card, f"{quote} (quoted in {path}) is not in the model card"
+
+
+def test_statements_that_later_phases_made_false_are_gone_from_the_threat_model():
+    text = (DOCS / "threat-model.md").read_text(encoding="utf-8")
+    for stale in (
+        "Never validated, planned or applied",
+        "Containers never run by the assistant",
+        "| No request rate limit;",
+    ):
+        assert stale not in text, f"threat-model.md still says: {stale}"

@@ -192,7 +192,7 @@ def build_steps(p: Paths) -> list[Step]:
             "Should the model be retrained? (a question with rules, not a reflex)",
             3,
             (
-                "Triggers: drift, model age over 90 days, 200 new fraud labels, or forced. Unknown inputs never fire.",
+                "Triggers: major drift, the champion's data more than 90 days old, 200 new fraud labels, or forced. A missing input is shown as unknown, never as no.",
                 "A candidate is only ever registered; promotion needs a person and a reason.",
             ),
             commands=(
