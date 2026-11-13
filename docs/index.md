@@ -10,6 +10,11 @@ Every document in `docs/`, grouped by what you want to know. Start with the firs
 - [Decisions](decisions.md): the ADR index with one line per decision
 - [Roadmap](roadmap.md) and [project state](PROJECT_STATE.md)
 
+## Presenting the project
+- [Portfolio guide](portfolio.md): the project in three lengths, a ten-minute reviewer path, evidence for each capability, how to say it was built
+- [Resume and profile text](resume.md): bullets with a claims ledger and banned wording
+- [Interview preparation](interview-prep.md): numbers, stories, questions and answers, a self-test
+
 ## Data and features
 - [Data dictionary](data-dictionary.md): tables, columns, the lake layers
 - [Data quality](data-quality.md): quarantine, checks, "what happens when bad data enters"
