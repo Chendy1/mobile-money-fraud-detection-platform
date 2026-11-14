@@ -1,5 +1,5 @@
 # Linux/macOS convenience targets. On Windows use: .\scripts\dev.ps1 <task>
-.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc deploy-init preflight up-prod down-prod verify backup tf-validate cost demo demo-full demo-check demo-clean
+.PHONY: setup lint format test generate ingest quality eda features train advanced explain card pipeline compare apicheck serve up down smoke simulate predictions baseline monitor upmon driftref drift regboot regls retrain-check retrain dashboard dashcheck secscan audit loadtest inproc deploy-init preflight up-prod down-prod verify backup tf-validate cost demo demo-full demo-check demo-clean scorecard scorecard-check
 setup:
 	python -m venv .venv && .venv/bin/pip install -e ".[dev,eda,ml,explain,tracking,api,dashboard]"
 lint:
@@ -130,3 +130,9 @@ demo-check:
 
 demo-clean:
 	python -m mmrisk.demo clean
+
+scorecard:
+	python -m mmrisk.scorecard render
+
+scorecard-check:
+	python -m mmrisk.scorecard check

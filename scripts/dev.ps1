@@ -1,6 +1,6 @@
 # Windows task runner (Makefile equivalent). Run from the repo root.
 # Usage: .\scripts\dev.ps1 setup | lint | format | test | generate | ingest | quality | eda | features | train | advanced | explain | card | pipeline | compare | apicheck | serve | up | down | smoke | simulate | predictions | baseline | monitor | upmon | driftref | drift | regboot | regls | retrain-check | retrain | dashboard | dashcheck | secscan | audit | loadtest | inproc | deploy-init | preflight | up-prod | down-prod | verify | backup | tf-validate | cost
-param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup", "tf-validate", "cost", "demo", "demo-full", "demo-check", "demo-clean")][string]$Task)
+param([Parameter(Mandatory = $true)][ValidateSet("setup", "lint", "format", "test", "generate", "ingest", "quality", "eda", "features", "train", "advanced", "explain", "card", "pipeline", "compare", "apicheck", "serve", "up", "down", "smoke", "simulate", "predictions", "baseline", "monitor", "upmon", "driftref", "drift", "regboot", "regls", "retrain-check", "retrain", "dashboard", "dashcheck", "secscan", "audit", "loadtest", "inproc", "deploy-init", "preflight", "up-prod", "down-prod", "verify", "backup", "tf-validate", "cost", "demo", "demo-full", "demo-check", "demo-clean", "scorecard", "scorecard-check")][string]$Task)
 
 $ErrorActionPreference = "Stop"
 $venvPython = Join-Path $PSScriptRoot "..\.venv\Scripts\python.exe"
@@ -56,6 +56,9 @@ switch ($Task) {
     "demo-full" { & $venvPython -m mmrisk.demo run --track standard }
     "demo-check" { & $venvPython -m mmrisk.demo check }
     "demo-clean" { & $venvPython -m mmrisk.demo clean }
+    # evidence scorecard: scorecard regenerates docs/scorecard.md, scorecard-check verifies it
+    "scorecard" { & $venvPython -m mmrisk.scorecard render }
+    "scorecard-check" { & $venvPython -m mmrisk.scorecard check }
     "tf-validate" {
         # needs the terraform CLI; makes no AWS call and needs no credentials
         terraform -chdir=infrastructure/terraform fmt -check -diff
