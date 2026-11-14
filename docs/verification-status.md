@@ -38,12 +38,16 @@ Annotations that remain in CI and are only warnings: Node.js 20 deprecation for 
 
 | Item | Result |
 |---|---|
-| Full test suite | 1217 passed, 2 skipped in 8 min 22 s, run on 2026-11-13 with everything through Phase 26 present (the skips need `promtool` and a Terraform binary, absent in the sandbox). This is the only full-suite number from the sandbox; the counts in PROJECT_STATE are historical |
+| Full test suite | 1245 passed, 2 skipped in 7 min 33 s, run on 2026-11-14 with everything through Phase 27 present (the skips need `promtool` and a Terraform binary, absent in the sandbox). This is the only full-suite number from the sandbox; the counts in PROJECT_STATE are historical |
 | Lint | `ruff check` and `ruff format --check` clean on the files changed in each phase |
 | Mutation checks | each phase deliberately broke the code in specific ways and confirmed a test failed (counts are in the phase's CHANGELOG entry); this is a check on the tests, not a proof |
 | Measurements (latency, load, memory) | one run each on 2 shared CPUs; see [load-testing.md](load-testing.md) for what they do and do not show |
 | Guided demo (Phase 25) | `python -m mmrisk.demo run --yes` against a lake and a `--quick`-trained model: 12 of 12 steps ok in 37 s; its real commands also run in an integration test (13 tests) |
 | Older and newer libraries | the suite also passed on older (Polars 1.12.0, scikit-learn 1.5.2, numpy 2.1.3, Python 3.13) and newer (Polars 2.0.0, scikit-learn 1.9.1) versions up to Phase 21; **not re-run for Phases 22 and 23** |
+
+## Per-area view
+
+[scorecard.md](scorecard.md) turns this page into one level per area (E0 to E5). It reads the CI run and the Windows suite recorded above, so when you record a new CI run or a new Windows run here, update `docs/scorecard.json` and run `python -m mmrisk.scorecard render`; a test fails if the page is stale.
 
 ## Not verified (TO VERIFY)
 

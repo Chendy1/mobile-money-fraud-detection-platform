@@ -13,6 +13,7 @@ Every document in `docs/`, grouped by what you want to know. Start with the firs
 ## Presenting the project
 - [Portfolio guide](portfolio.md): the project in three lengths, a ten-minute reviewer path, evidence for each capability, how to say it was built
 - [Resume and profile text](resume.md): bullets with a claims ledger and banned wording
+- [Evidence scorecard](scorecard.md): each area on a ladder from built to checked outside, computed from the repository (generated; do not edit)
 - [Interview preparation](interview-prep.md): numbers, stories, questions and answers, a self-test
 
 ## Data and features
