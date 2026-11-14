@@ -25,9 +25,9 @@ Each area of the project is placed on an evidence ladder. The level is **compute
 
 ## Summary
 
-23 areas. E0: 0, E1: 0, E2: 3, E3: 8, E4: 12, E5: 0.
+23 areas. E0: 0, E1: 0, E2: 0, E3: 11, E4: 12, E5: 0.
 
-Latest green CI run: 42930127418, covering work through Phase 23. Windows full suite on record: full test suite on the author's Windows machine at Phase 14: 627 passed, 1 failed (fixed).
+Latest green CI run: 43549492031, covering work through Phase 27. Windows full suite on record: full test suite on the author's Windows machine at Phase 14: 627 passed, 1 failed (fixed).
 
 ## Areas
 
@@ -53,9 +53,9 @@ Latest green CI run: 42930127418, covering work through Phase 23. Windows full s
 | AWS design and plan-only Terraform | 21-22 | E3 | no | E4: no run on the author's machine after that change (last changed in Phase 23) |
 | Cloud cost estimator and controls | 23 | E3 | partly | E4: no run on the author's machine after that change (last changed in Phase 23) |
 | Automated tests and CI pipeline | 1-23 | E3 | yes | E4: no run on the author's machine after that change (last changed in Phase 23) |
-| Final documentation set | 24 | E2 | no | E3: last changed in Phase 26, after the latest green CI run (42930127418, through Phase 23) |
-| Guided demo | 25 | E2 | partly | E3: last changed in Phase 25, after the latest green CI run (42930127418, through Phase 23) |
-| Portfolio, resume and interview prep | 26 | E2 | no | E3: last changed in Phase 26, after the latest green CI run (42930127418, through Phase 23) |
+| Final documentation set | 24 | E3 | no | E4: no run on the author's machine after that change (last changed in Phase 26) |
+| Guided demo | 25 | E3 | partly | E4: no run on the author's machine after that change (last changed in Phase 25) |
+| Portfolio, resume and interview prep | 26 | E3 | no | E4: no run on the author's machine after that change (last changed in Phase 26) |
 
 "Ran for real" means the thing ran outside a test: yes, it was run as a user would run it; partly, some of it; no, it has only been tested or validated statically.
 
@@ -286,41 +286,41 @@ Sourced prices, three scenarios, lower bounds, what is not priced listed.
 Lint, the full suite, image builds, Terraform validation, dependency audit; mutation checks per phase.
 
 - Last changed: Phase 23 (workflow fixed after Phase 23 (setup-python, deploy extra)).
-- Ran for real: yes. Four jobs green in run 42930127418; it was red for five pushes before that.
+- Ran for real: yes. Four jobs green in run 43549492031 (Phase 27 push); it was red for five pushes (Phase 20 onward) before the fix in run 42930127418.
 - Resume bullets that rest on it: B11.
 - Missing: E4 missing: no run on the author's machine after that change (last changed in Phase 23).
 - Limit: Node.js 20 deprecation warnings on three actions.
 - Limit: The Windows full suite on record is Phase 14.
 - To move it up: Run the whole suite on Windows now and record the count.
 
-### Final documentation set (E2: built and tested in the sandbox)
+### Final documentation set (E3: tests green in CI after the last change)
 
 Index, verification status, limitations, ADRs, guards for links and quoted figures.
 
 - Last changed: Phase 26 (updated in every phase through 26).
 - Ran for real: no. Tests run in the sandbox only; no CI result recorded for the pushes after Phase 23.
-- Missing: E3 missing: last changed in Phase 26, after the latest green CI run (42930127418, through Phase 23).
+- Missing: E4 missing: no run on the author's machine after that change (last changed in Phase 26).
 - Limit: Prose is only as true as the hand-written status pages.
 - To move it up: Push and record the green CI run.
 
-### Guided demo (E2: built and tested in the sandbox)
+### Guided demo (E3: tests green in CI after the last change)
 
 12 checked steps, two tracks, writes only under data/demo.
 
 - Last changed: Phase 25 (built in Phase 25).
 - Ran for real: partly. 12 of 12 steps in the sandbox; never run on Windows or through the dev.ps1 tasks.
-- Missing: E3 missing: last changed in Phase 25, after the latest green CI run (42930127418, through Phase 23).
+- Missing: E4 missing: no run on the author's machine after that change (last changed in Phase 25).
 - Limit: Windows run pending.
 - Limit: Timings from one run.
 - To move it up: Run `dev.ps1 demo-check` and `demo` on Windows.
 
-### Portfolio, resume and interview prep (E2: built and tested in the sandbox)
+### Portfolio, resume and interview prep (E3: tests green in CI after the last change)
 
 Bullets with a claims ledger, banned wording, interview answers with sources.
 
 - Last changed: Phase 26 (built in Phase 26).
 - Ran for real: no. Tests run in the sandbox only.
-- Missing: E3 missing: last changed in Phase 26, after the latest green CI run (42930127418, through Phase 23).
+- Missing: E4 missing: no run on the author's machine after that change (last changed in Phase 26).
 - Limit: Whether the bullets persuade, and what the author personally did, are not measurable here.
 - To move it up: Push, record CI, and have someone outside review the bullets.
 

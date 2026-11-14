@@ -10,7 +10,7 @@ Nothing here is a claim about real fraud: all data is synthetic. "Passed" means 
 
 ## CI (GitHub Actions, Ubuntu)
 
-Latest green run: **42930127418** (commit "fix(ci): make the deploy extra hold the libraries the deploy commands import"). All four jobs passed.
+Latest green run: **43549492031** (commit "docs: record Phase 27 and link the evidence scorecard", covers everything through Phase 27). All four jobs passed. The run that fixed the Phase 20 failure was 42930127418; the pushes for Phases 24 to 26 were also green (43123415193, 43354557392, 43357296884).
 
 | Job | What it runs | Result |
 |---|---|---|
@@ -32,6 +32,7 @@ Annotations that remain in CI and are only warnings: Node.js 20 deprecation for 
 | Phase 20 deploy commands | `init`, `preflight` run; integration test file: 13 passed after one test fix |
 | Phase 20 API container | built, healthy; `deploy verify` **12 of 12 passed** against the container |
 | Phase 20 dashboard container | first run crashed (`No module named 'joblib'`); image fixed; **rebuilt container not confirmed** |
+| Phase 27 `dev.ps1 scorecard-check` | `scorecard check: ok (23 areas)` |
 | Phases 2 to 13, 15 to 19, 21 to 23 | full-suite results on Windows **not reported** |
 
 ## Sandbox (Linux, no Docker)

@@ -50,7 +50,7 @@ Bullets you can paste, each tied to something in the repository, and the rules t
 | B8 | [ADR-020](adr/ADR-020-drift-detection.md), [ADR-021](adr/ADR-021-gated-retraining.md); demo step `drift_shift` | CI (tests), sandbox |
 | B9 | [ADR-024](adr/ADR-024-load-testing.md), [load-testing.md](load-testing.md) | sandbox and author's machine, one run each |
 | B10 | [ADR-025](adr/ADR-025-local-deployment.md), [deployment.md](deployment.md) | CI (compose config and preflight rules), author's machine (API container); backup and restore on Windows TO VERIFY |
-| B11 | `.github/workflows/ci.yml`, [verification-status.md](verification-status.md), [troubleshooting.md](troubleshooting.md) | CI (run 42930127418 green) |
+| B11 | `.github/workflows/ci.yml`, [verification-status.md](verification-status.md), [troubleshooting.md](troubleshooting.md) | CI (run 43549492031 green) |
 | B12 | [aws-design.md](aws-design.md), [ADR-026](adr/ADR-026-aws-design.md), [ADR-027](adr/ADR-027-terraform-plan-only.md), [ADR-028](adr/ADR-028-cloud-cost-controls.md), [cloud-costs.md](cloud-costs.md) | CI (`validate`); never planned or applied |
 
 ## Claims ledger (every figure in the bullets)

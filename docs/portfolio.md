@@ -35,7 +35,7 @@ Author: Clyde Adili ([Chendy1](https://github.com/Chendy1)). Repository: https:/
 | Gated retraining, file-based registry, explicit promotion | `mmrisk.retrain`, `mmrisk.registry`, [ADR-021](adr/ADR-021-gated-retraining.md) | tests | CI |
 | Open-loop load tester, latency from the intended start | `mmrisk.loadtest`, [ADR-024](adr/ADR-024-load-testing.md), [load-testing.md](load-testing.md) | one run each on 2 shared CPUs and on the author's laptop | sandbox, author |
 | Hardened compose, preflight, outside verifier, backup and restore | `mmrisk.deploy`, [deployment.md](deployment.md), [ADR-025](adr/ADR-025-local-deployment.md) | API container ran on Docker Desktop; `docker compose config` and the preflight rules pass in CI | author, CI |
-| CI with four jobs | `.github/workflows/ci.yml` | green run 42930127418 | CI |
+| CI with four jobs | `.github/workflows/ci.yml` | green run 43549492031 | CI |
 | AWS design, plan-only Terraform, sourced cost estimator | [aws-design.md](aws-design.md), [terraform.md](terraform.md), [cloud-costs.md](cloud-costs.md) | `terraform validate` passes in CI; **never planned or applied**; costs are lower bounds | design, CI |
 | A demo that checks its own output | `mmrisk.demo`, [demo.md](demo.md), [ADR-029](adr/ADR-029-guided-demo.md) | 12 of 12 steps in the sandbox; not yet run on Windows | sandbox, CI |
 
