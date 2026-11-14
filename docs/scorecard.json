@@ -1,9 +1,9 @@
 {
   "ci": {
-    "run_id": "43549492031",
-    "covers_through_phase": 27,
+    "run_id": "43552599791",
+    "covers_through_phase": 28,
     "source": "docs/verification-status.md",
-    "match": "43549492031"
+    "match": "43552599791"
   },
   "windows_suite": {
     "what": "full test suite on the author's Windows machine at Phase 14: 627 passed, 1 failed (fixed)",
@@ -656,7 +656,7 @@
       "author_run": null,
       "real_world": null,
       "ran_for_real": "yes",
-      "real_note": "Four jobs green in run 43549492031 (Phase 27 push); it was red for five pushes (Phase 20 onward) before the fix in run 42930127418.",
+      "real_note": "Four jobs green in run 43552599791 (Phase 28 push); it was red for five pushes (Phase 20 onward) before the fix in run 42930127418.",
       "limits": [
         "Node.js 20 deprecation warnings on three actions",
         "The Windows full suite on record is Phase 14"

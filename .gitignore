@@ -29,6 +29,8 @@ data/monitoring/
 data/drift/
 data/retrain/
 data/security/
+data/audit/
+data/demo/
 data/loadtest/
 secrets/
 backups/

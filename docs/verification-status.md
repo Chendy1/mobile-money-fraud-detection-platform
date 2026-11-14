@@ -10,7 +10,7 @@ Nothing here is a claim about real fraud: all data is synthetic. "Passed" means 
 
 ## CI (GitHub Actions, Ubuntu)
 
-Latest green run: **43549492031** (commit "docs: record Phase 27 and link the evidence scorecard", covers everything through Phase 27). All four jobs passed. The run that fixed the Phase 20 failure was 42930127418; the pushes for Phases 24 to 26 were also green (43123415193, 43354557392, 43357296884).
+Latest green run: **43552599791** (the Phase 28 push, covers everything through Phase 28). All four jobs passed. The run that fixed the Phase 20 failure was 42930127418; the pushes for Phases 24 to 27 were also green (43123415193, 43354557392, 43357296884, 43549492031).
 
 | Job | What it runs | Result |
 |---|---|---|
