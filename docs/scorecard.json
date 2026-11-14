@@ -669,19 +669,21 @@
     {
       "id": "documentation",
       "name": "Final documentation set",
-      "phases": "24",
-      "summary": "Index, verification status, limitations, ADRs, guards for links and quoted figures.",
+      "phases": "24,28",
+      "summary": "Index, verification status, limitations, ADRs, release notes and release steps, with guards for links, quoted figures and version agreement.",
       "code": [
-        "docs/index.md"
+        "docs/index.md",
+        "docs/releasing.md"
       ],
       "tests": [
-        "tests/unit/test_docs_unit.py"
+        "tests/unit/test_docs_unit.py",
+        "tests/unit/test_release_unit.py"
       ],
       "ci_jobs": [
         "lint-and-test"
       ],
-      "last_phase": 26,
-      "last_change": "updated in every phase through 26",
+      "last_phase": 28,
+      "last_change": "release notes and releasing guide added in Phase 28",
       "uses_windows_suite": false,
       "author_run": null,
       "real_world": null,

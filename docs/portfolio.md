@@ -47,7 +47,7 @@ These are suggestions for you to apply; the assistant cannot see or change your 
 - **Topics:** `fraud-detection`, `mobile-money`, `machine-learning`, `lightgbm`, `fastapi`, `mlops`, `polars`, `duckdb`, `docker`, `terraform`, `synthetic-data`.
 - **Pin** the repository. The README's first screen already carries status, the caveat on the results and the architecture diagram.
 - **Screenshots:** none exist. The dashboard has not been viewed in a browser by the assistant; take your own screenshots of what you have confirmed, and say which data they show (synthetic).
-- **Release notes** come in Phase 28.
+- **Release notes** for v0.1.0 are in [release-notes-v0.1.0.md](release-notes-v0.1.0.md); how to publish them is in [releasing.md](releasing.md).
 
 ## How it was built (say it plainly)
 The project was built phase by phase with an AI coding assistant (Claude), which wrote most of the code and documents; the author set the scope and the working rules (synthetic data only, nothing claimed that was not verified, a list of what was not checked after every phase), ran each phase on a Windows machine, reported the results and failures, and decided what came next. Neither the repository nor its commit messages currently say this. Employers increasingly ask, and an unstated answer reads worse than a stated one, so consider adding a short note to the README, for example:

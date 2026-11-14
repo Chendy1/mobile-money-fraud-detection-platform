@@ -4,7 +4,7 @@ An **M-Pesa-inspired** mobile-money transaction risk scoring platform, built as 
 
 > **Disclaimer.** This is an independent simulation. It is **not affiliated with, endorsed by, or connected to Safaricom or M-Pesa**. It uses **entirely synthetic data**. No real customer or transaction data is requested, scraped, or used. Metrics on synthetic data demonstrate engineering capability, not real-world fraud-detection performance.
 
-**Status:** Phases 0 to 27 complete (see [roadmap](docs/roadmap.md)). CI is green: lint, the full test suite, Docker image builds, Terraform `validate`. What was checked where, and what was not, is in [docs/verification-status.md](docs/verification-status.md); known limits are in [docs/limitations.md](docs/limitations.md). Every doc is listed in [docs/index.md](docs/index.md). To see it run: [demo scripts](docs/demo.md) (`.\scripts\dev.ps1 demo`). What each area has actually been checked by, level by level: [evidence scorecard](docs/scorecard.md).
+**Status:** Phases 0 to 28 complete (see [roadmap](docs/roadmap.md)). CI is green: lint, the full test suite, Docker image builds, Terraform `validate`. What was checked where, and what was not, is in [docs/verification-status.md](docs/verification-status.md); known limits are in [docs/limitations.md](docs/limitations.md). Every doc is listed in [docs/index.md](docs/index.md). To see it run: [demo scripts](docs/demo.md) (`.\scripts\dev.ps1 demo`). What each area has actually been checked by, level by level: [evidence scorecard](docs/scorecard.md).
 
 ## Business problem
 Mobile-money providers must stop fraud (SIM-swap, social engineering, mule accounts, agent cash-out) without blocking legitimate customers. The platform outputs a risk **score** (probability) and a LOW / MEDIUM / HIGH level with an explanation. It never claims certainty. Thresholds come from an explicit cost model (false-positive friction vs missed-fraud loss).
@@ -234,6 +234,7 @@ Start at [docs/index.md](docs/index.md), the map of every document. The ones to 
 - [Architecture](docs/architecture.md) and [decisions (ADR index)](docs/decisions.md)
 - [Model card](docs/model-card.md)
 - [Testing](docs/testing.md), [troubleshooting](docs/troubleshooting.md) and [project state](docs/PROJECT_STATE.md)
+- Releasing: [release notes for v0.1.0](docs/release-notes-v0.1.0.md) and [how the release is cut](docs/releasing.md)
 - Evidence per area: [scorecard](docs/scorecard.md) (`.\scripts\dev.ps1 scorecard-check` verifies it)
 - Presenting it: [portfolio guide](docs/portfolio.md), [resume text with a claims ledger](docs/resume.md), [interview preparation](docs/interview-prep.md)
 

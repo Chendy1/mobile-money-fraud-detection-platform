@@ -39,7 +39,7 @@ Annotations that remain in CI and are only warnings: Node.js 20 deprecation for 
 
 | Item | Result |
 |---|---|
-| Full test suite | 1245 passed, 2 skipped in 7 min 33 s, run on 2026-11-14 with everything through Phase 27 present (the skips need `promtool` and a Terraform binary, absent in the sandbox). This is the only full-suite number from the sandbox; the counts in PROJECT_STATE are historical |
+| Full test suite | 1256 passed, 2 skipped in 5 min 27 s, run on 2026-11-14 with everything through Phase 28 present (the skips need `promtool` and a Terraform binary, absent in the sandbox). This is the only full-suite number from the sandbox; the counts in PROJECT_STATE are historical |
 | Lint | `ruff check` and `ruff format --check` clean on the files changed in each phase |
 | Mutation checks | each phase deliberately broke the code in specific ways and confirmed a test failed (counts are in the phase's CHANGELOG entry); this is a check on the tests, not a proof |
 | Measurements (latency, load, memory) | one run each on 2 shared CPUs; see [load-testing.md](load-testing.md) for what they do and do not show |
