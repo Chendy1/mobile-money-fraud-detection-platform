@@ -69,3 +69,4 @@ select = ["E", "F", "I", "UP", "B"]
 "src/mmrisk/models/explain_report.py" = ["E501"]
 "src/mmrisk/models/model_card.py" = ["E501"]
 "src/mmrisk/demo/steps.py" = ["E501"]  # the talking points are prose
+"src/mmrisk/scorecard/*.py" = ["E501"]  # table rows and prose are written as one line

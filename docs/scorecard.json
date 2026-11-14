@@ -1,0 +1,755 @@
+{
+  "ci": {
+    "run_id": "42930127418",
+    "covers_through_phase": 23,
+    "source": "docs/verification-status.md",
+    "match": "42930127418"
+  },
+  "windows_suite": {
+    "what": "full test suite on the author's Windows machine at Phase 14: 627 passed, 1 failed (fixed)",
+    "as_of_phase": 14,
+    "source": "docs/verification-status.md",
+    "match": "627 passed"
+  },
+  "areas": [
+    {
+      "id": "data-generation",
+      "name": "Synthetic data generator and label model",
+      "phases": "2-3",
+      "summary": "Seeded generator with delayed, noisy labels and the hidden truth kept apart.",
+      "code": [
+        "src/mmrisk/generation"
+      ],
+      "tests": [
+        "tests/unit/test_generation_config.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 3,
+      "last_change": "built in Phase 2-3; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Generates the default dataset in the sandbox; the Windows suite covered it at Phase 14.",
+      "limits": [
+        "Fraud patterns are ones the author wrote; nothing here says how real fraud looks (ADR-001)",
+        "One dataset and one seed"
+      ],
+      "next": "Repeat the evaluation on several seeds; compare with a public fraud dataset.",
+      "resume": [
+        "B1"
+      ]
+    },
+    {
+      "id": "lake-quality",
+      "name": "Layered lake, quarantine, data quality, EDA",
+      "phases": "3-5",
+      "summary": "Immutable raw layer, cleaned layer, quarantine with reasons, ledger, dataset checks, a generated EDA report.",
+      "code": [
+        "src/mmrisk/ingestion",
+        "src/mmrisk/validation",
+        "src/mmrisk/eda"
+      ],
+      "tests": [
+        "tests/unit/test_ingestion_units.py",
+        "tests/unit/test_dq_rules.py",
+        "tests/integration/test_ingestion_pipeline.py",
+        "tests/integration/test_eda.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 5,
+      "last_change": "built in Phase 3-5; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Ran end to end in the sandbox (demo step `quality`); the Windows suite covered it at Phase 14.",
+      "limits": [
+        "Thresholds in the dataset checks are written down but not tuned on anything real"
+      ],
+      "next": "Run the Windows suite again after the latest phases and paste the result.",
+      "resume": [
+        "B5"
+      ]
+    },
+    {
+      "id": "features",
+      "name": "Point-in-time-safe feature library",
+      "phases": "6",
+      "summary": "28 backward-looking features, one implementation for training and serving.",
+      "code": [
+        "src/mmrisk/features"
+      ],
+      "tests": [
+        "tests/unit/test_features_unit.py",
+        "tests/integration/test_features.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 6,
+      "last_change": "built in Phase 6; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Parity with the API shown in the demo step `apicheck` (sandbox).",
+      "limits": [
+        "Inbound-transfer features are optimistic because the generator writes that pattern (ADR-011)",
+        "History is unbounded in memory; the online path recomputes per request"
+      ],
+      "next": "Test on data the generator did not produce.",
+      "resume": [
+        "B3"
+      ]
+    },
+    {
+      "id": "evaluation",
+      "name": "Time split with a label gap, baselines, bootstrap intervals",
+      "phases": "7",
+      "summary": "Rules, logistic regression and random forest on a leak-safe split; PR-AUC with customer-level bootstrap.",
+      "code": [
+        "src/mmrisk/models"
+      ],
+      "tests": [
+        "tests/unit/test_models_unit.py",
+        "tests/integration/test_models.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 7,
+      "last_change": "built in Phase 7; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "The model card's numbers came from a sandbox run.",
+      "limits": [
+        "Test window holds about a hundred frauds; the models cannot be separated",
+        "One seed; the author looked at test scores during development (ADR-012)"
+      ],
+      "next": "Repeat across seeds and report the spread.",
+      "resume": [
+        "B1",
+        "B2"
+      ]
+    },
+    {
+      "id": "calibration-costs",
+      "name": "LightGBM, Platt calibration, expected-cost decisions",
+      "phases": "8",
+      "summary": "Boosted trees, calibration on validation only, ALLOW/REVIEW/BLOCK from expected cost.",
+      "code": [
+        "src/mmrisk/models"
+      ],
+      "tests": [
+        "tests/unit/test_calibration_unit.py",
+        "tests/unit/test_costs_unit.py",
+        "tests/integration/test_advanced.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 8,
+      "last_change": "built in Phase 8; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "The model card and demo step `card` read results from a sandbox run.",
+      "limits": [
+        "All four costs are ASSUMED; the 46% is under those assumptions",
+        "LightGBM did not beat the random forest on PR-AUC"
+      ],
+      "next": "Replace assumed costs with a business owner's numbers; rerun the sensitivity table.",
+      "resume": [
+        "B2",
+        "B4"
+      ]
+    },
+    {
+      "id": "explanations",
+      "name": "Explanations and the model card",
+      "phases": "9",
+      "summary": "Exact TreeSHAP, reason codes, permutation importance, a generated model card.",
+      "code": [
+        "src/mmrisk/models/explain.py",
+        "src/mmrisk/models/model_card.py"
+      ],
+      "tests": [
+        "tests/unit/test_explain_unit.py",
+        "tests/unit/test_model_card_unit.py",
+        "tests/integration/test_explain.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 9,
+      "last_change": "built in Phase 9; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "The card is generated from saved results (sandbox).",
+      "limits": [
+        "Explanations describe the model, not causes of fraud"
+      ],
+      "next": "Review the reason codes with someone who investigates fraud.",
+      "resume": []
+    },
+    {
+      "id": "pipeline-tracking",
+      "name": "One-command pipeline and MLflow tracking",
+      "phases": "10",
+      "summary": "`mmrisk.pipeline run` and a local MLflow store with a data fingerprint.",
+      "code": [
+        "src/mmrisk/pipeline"
+      ],
+      "tests": [
+        "tests/unit/test_pipeline_unit.py",
+        "tests/integration/test_pipeline.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 10,
+      "last_change": "built in Phase 10; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Run in the sandbox.",
+      "limits": [
+        "Local sqlite store only; no remote tracking server"
+      ],
+      "next": "Run `dev.ps1 pipeline` on Windows and compare the card.",
+      "resume": []
+    },
+    {
+      "id": "scoring-api",
+      "name": "Scoring API",
+      "phases": "11-12",
+      "summary": "FastAPI service: strict input, calibrated probability, action, reasons, repeat-safe.",
+      "code": [
+        "src/mmrisk/api"
+      ],
+      "tests": [
+        "tests/unit/test_api_unit.py",
+        "tests/unit/test_smoke_unit.py",
+        "tests/integration/test_api.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test",
+        "docker-build"
+      ],
+      "last_phase": 20,
+      "last_change": "client changes (key, certificate) in Phase 20",
+      "uses_windows_suite": false,
+      "author_run": {
+        "what": "API container built and healthy on Docker Desktop; `deploy verify` 12 of 12 passed against it (keys and TLS on)",
+        "as_of_phase": 20,
+        "source": "docs/deployment.md",
+        "match": "12 of 12 passed"
+      },
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Served the model from a container on the author's Docker Desktop (verify's smoke checks).",
+      "limits": [
+        "One process, one lock, in-memory history: no failover",
+        "Capacity not measured in a container"
+      ],
+      "next": "Measure inside the container with keys on.",
+      "resume": [
+        "B3",
+        "B7"
+      ]
+    },
+    {
+      "id": "streaming",
+      "name": "Stream simulation with seeded faults",
+      "phases": "13",
+      "summary": "Bounded queue, reorder buffer, jitter, duplicates, corrupted events, an accounting identity.",
+      "code": [
+        "src/mmrisk/streaming"
+      ],
+      "tests": [
+        "tests/unit/test_streaming_unit.py",
+        "tests/unit/test_streaming_http_unit.py",
+        "tests/integration/test_streaming.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 20,
+      "last_change": "scorer client changed in Phase 20 (key, certificate)",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Ran in the sandbox (demo step `simulate`).",
+      "limits": [
+        "A replay of stored data, not a real feed",
+        "Windows evidence predates the Phase 20 client change"
+      ],
+      "next": "Run the full suite on Windows.",
+      "resume": [
+        "B6"
+      ]
+    },
+    {
+      "id": "monitoring-checks",
+      "name": "Prometheus metrics endpoint and prediction-store checks",
+      "phases": "14",
+      "summary": "`/metrics`, a baseline, and checks on stored decisions.",
+      "code": [
+        "src/mmrisk/monitoring"
+      ],
+      "tests": [
+        "tests/unit/test_monitoring_checks_unit.py",
+        "tests/unit/test_monitoring_cli_unit.py",
+        "tests/unit/test_monitoring_metrics_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 14,
+      "last_change": "built in Phase 14; no recorded change since",
+      "uses_windows_suite": true,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Ran in the sandbox (demo step `monitor`).",
+      "limits": [
+        "Checks see decisions, not correctness: no labels yet",
+        "No alert delivery"
+      ],
+      "next": "Wire a real alert path; define who is paged.",
+      "resume": []
+    },
+    {
+      "id": "prometheus-grafana",
+      "name": "Prometheus and Grafana stack",
+      "phases": "14,20",
+      "summary": "Scrape config, alert rules, a Grafana dashboard definition.",
+      "code": [
+        "infrastructure/monitoring"
+      ],
+      "tests": [
+        "tests/unit/test_monitoring_infra_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 20,
+      "last_change": "production Prometheus config added in Phase 20",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "no",
+      "real_note": "Static tests only; the Prometheus and Grafana containers were never started.",
+      "limits": [
+        "Never run, so scraping over TLS with the metrics key is unconfirmed",
+        "`promtool` checks are skipped where it is absent"
+      ],
+      "next": "Run `docker compose --profile monitoring up` and look at the targets page.",
+      "resume": []
+    },
+    {
+      "id": "drift",
+      "name": "Drift detection",
+      "phases": "15",
+      "summary": "PSI against a frozen reference, per-feature bins, a documented blind spot.",
+      "code": [
+        "src/mmrisk/drift"
+      ],
+      "tests": [
+        "tests/unit/test_drift_stats_unit.py",
+        "tests/unit/test_drift_detect_unit.py",
+        "tests/unit/test_drift_cli_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 15,
+      "last_change": "built in Phase 15; no recorded change since",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "partly",
+      "real_note": "Ran in the sandbox on a normal and a shifted week (demo steps `drift`, `drift_shift`); not reported from Windows.",
+      "limits": [
+        "A 50% amount rise is not flagged (PSI 0.09); thresholds are conventions",
+        "Features that grow with time are excluded by design"
+      ],
+      "next": "Run the drift commands on Windows; test against a slow, realistic drift.",
+      "resume": [
+        "B8"
+      ]
+    },
+    {
+      "id": "retraining-registry",
+      "name": "Gated retraining and model registry",
+      "phases": "16",
+      "summary": "File registry with checksums, atomic production pointer, triggers, gates, explicit promotion.",
+      "code": [
+        "src/mmrisk/registry",
+        "src/mmrisk/retrain"
+      ],
+      "tests": [
+        "tests/unit/test_registry_unit.py",
+        "tests/unit/test_retrain_unit.py",
+        "tests/integration/test_retrain.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 16,
+      "last_change": "built in Phase 16; no recorded change since",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "partly",
+      "real_note": "Ran in the sandbox (demo step `retrain`); a fix to a trigger was pushed.",
+      "limits": [
+        "Whoever can write the registry folder can change the model",
+        "Triggers and gates use assumed numbers"
+      ],
+      "next": "Run a full retrain-and-promote cycle on Windows.",
+      "resume": [
+        "B8"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "name": "Read-only dashboard",
+      "phases": "17",
+      "summary": "Streamlit page over the prediction store, checks, drift, registry and retrain status.",
+      "code": [
+        "src/mmrisk/dashboard"
+      ],
+      "tests": [
+        "tests/unit/test_dashboard_app_unit.py",
+        "tests/unit/test_dashboard_cli_unit.py",
+        "tests/unit/test_dashboard_data_unit.py",
+        "tests/unit/test_dashboard_login_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 17,
+      "last_change": "built in Phase 17; the image was fixed in Phase 20",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "no",
+      "real_note": "The data layer is tested; how it looks in a browser has not been confirmed (tabs, masking), and the rebuilt container is unconfirmed.",
+      "limits": [
+        "Browser view never checked by the assistant",
+        "Plain HTTP on loopback"
+      ],
+      "next": "Open it in a browser, check every tab and take screenshots.",
+      "resume": []
+    },
+    {
+      "id": "security",
+      "name": "API security",
+      "phases": "18",
+      "summary": "Hashed keys with roles, TLS, rate limits, failure block, audit log, safe model loading, secret scanner.",
+      "code": [
+        "src/mmrisk/security"
+      ],
+      "tests": [
+        "tests/unit/test_security_unit.py",
+        "tests/integration/test_security_api.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test",
+        "dependency-audit"
+      ],
+      "last_phase": 18,
+      "last_change": "built in Phase 18; a scanner fix in the same phase",
+      "uses_windows_suite": false,
+      "author_run": {
+        "what": "API container built and healthy on Docker Desktop; `deploy verify` 12 of 12 passed against it (keys and TLS on)",
+        "as_of_phase": 20,
+        "source": "docs/deployment.md",
+        "match": "12 of 12 passed"
+      },
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "The outside checks (no key, wrong key, role limits, plain HTTP) passed against the container on the author's machine.",
+      "limits": [
+        "Not an audit; no key expiry, no request signing",
+        "`pip-audit` findings (mlflow, pillow, pyasn1) not upgraded"
+      ],
+      "next": "Upgrade the flagged packages; get an outside review.",
+      "resume": [
+        "B7"
+      ]
+    },
+    {
+      "id": "load-testing",
+      "name": "Open-loop load tester and measurements",
+      "phases": "19",
+      "summary": "Latency counted from the intended start; ASSUMED targets; two machines measured.",
+      "code": [
+        "src/mmrisk/loadtest"
+      ],
+      "tests": [
+        "tests/unit/test_loadtest_unit.py",
+        "tests/integration/test_loadtest.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 19,
+      "last_change": "built in Phase 19; a Windows stop-process fix in the same phase",
+      "uses_windows_suite": false,
+      "author_run": {
+        "what": "`dev.ps1 loadtest` on the author's Windows machine (4 CPUs)",
+        "as_of_phase": 19,
+        "source": "docs/load-testing.md",
+        "match": "## A second machine (Windows"
+      },
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "One run each on two machines.",
+      "limits": [
+        "One run per machine; the 14.7 ms versus 4.9 ms per-score gap is unexplained",
+        "Not measured in a container or with several processes"
+      ],
+      "next": "Repeat several times; explain the gap; measure in the container.",
+      "resume": [
+        "B9"
+      ]
+    },
+    {
+      "id": "deployment",
+      "name": "Production-like local deployment",
+      "phases": "20",
+      "summary": "Hardened compose, preflight, outside-in verifier, backup and restore.",
+      "code": [
+        "src/mmrisk/deploy",
+        "docker-compose.prod.yml"
+      ],
+      "tests": [
+        "tests/unit/test_deploy_unit.py",
+        "tests/unit/test_container_unit.py",
+        "tests/integration/test_deploy.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test",
+        "docker-build"
+      ],
+      "last_phase": 20,
+      "last_change": "built in Phase 20; image fixes in the same phase",
+      "uses_windows_suite": false,
+      "author_run": {
+        "what": "API container built and healthy on Docker Desktop; `deploy verify` 12 of 12 passed against it (keys and TLS on)",
+        "as_of_phase": 20,
+        "source": "docs/deployment.md",
+        "match": "12 of 12 passed"
+      },
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "The API container ran on Docker Desktop and passed the verifier.",
+      "limits": [
+        "Dashboard container rebuild unconfirmed",
+        "Backup and restore on Windows, Linux file permissions and monitoring profile not run"
+      ],
+      "next": "Run the dashboard container, a restore into an empty folder, and the monitoring profile.",
+      "resume": [
+        "B10"
+      ]
+    },
+    {
+      "id": "aws-terraform",
+      "name": "AWS design and plan-only Terraform",
+      "phases": "21-22",
+      "summary": "ECS Fargate in private subnets, no public endpoint; Terraform that validates.",
+      "code": [
+        "docs/aws-design.md",
+        "infrastructure/terraform"
+      ],
+      "tests": [
+        "tests/unit/test_aws_design_unit.py",
+        "tests/unit/test_terraform_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test",
+        "terraform"
+      ],
+      "last_phase": 23,
+      "last_change": "endpoint gating added in Phase 23",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "no",
+      "real_note": "`terraform validate` passes in CI; `plan` and `apply` were never run, and nothing exists in AWS.",
+      "limits": [
+        "The container entrypoint script is not written",
+        "Resource behaviour is unconfirmed until a plan is read"
+      ],
+      "next": "Run `terraform plan` with read-only credentials in a throwaway account and review it.",
+      "resume": [
+        "B12"
+      ]
+    },
+    {
+      "id": "cloud-cost",
+      "name": "Cloud cost estimator and controls",
+      "phases": "23",
+      "summary": "Sourced prices, three scenarios, lower bounds, what is not priced listed.",
+      "code": [
+        "src/mmrisk/cloudcost",
+        "infrastructure/cost/prices.json"
+      ],
+      "tests": [
+        "tests/unit/test_cloudcost_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 23,
+      "last_change": "built in Phase 23",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "partly",
+      "real_note": "Ran in the sandbox (demo step `cost`); the figures are estimates, not bills.",
+      "limits": [
+        "Prices read from AWS pages, several are page examples; some items not priced",
+        "Assumed usage"
+      ],
+      "next": "Check each price against the AWS price list API and a billing console.",
+      "resume": [
+        "B12"
+      ]
+    },
+    {
+      "id": "ci-tests",
+      "name": "Automated tests and CI pipeline",
+      "phases": "1-23",
+      "summary": "Lint, the full suite, image builds, Terraform validation, dependency audit; mutation checks per phase.",
+      "code": [
+        ".github/workflows/ci.yml",
+        "tests"
+      ],
+      "tests": [
+        "tests/unit/test_ci_workflow_unit.py",
+        "tests/unit/test_smoke.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test",
+        "docker-build",
+        "terraform",
+        "dependency-audit"
+      ],
+      "last_phase": 23,
+      "last_change": "workflow fixed after Phase 23 (setup-python, deploy extra)",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "yes",
+      "real_note": "Four jobs green in run 42930127418; it was red for five pushes before that.",
+      "limits": [
+        "Node.js 20 deprecation warnings on three actions",
+        "The Windows full suite on record is Phase 14"
+      ],
+      "next": "Run the whole suite on Windows now and record the count.",
+      "resume": [
+        "B11"
+      ]
+    },
+    {
+      "id": "documentation",
+      "name": "Final documentation set",
+      "phases": "24",
+      "summary": "Index, verification status, limitations, ADRs, guards for links and quoted figures.",
+      "code": [
+        "docs/index.md"
+      ],
+      "tests": [
+        "tests/unit/test_docs_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 26,
+      "last_change": "updated in every phase through 26",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "no",
+      "real_note": "Tests run in the sandbox only; no CI result recorded for the pushes after Phase 23.",
+      "limits": [
+        "Prose is only as true as the hand-written status pages"
+      ],
+      "next": "Push and record the green CI run.",
+      "resume": []
+    },
+    {
+      "id": "demo",
+      "name": "Guided demo",
+      "phases": "25",
+      "summary": "12 checked steps, two tracks, writes only under data/demo.",
+      "code": [
+        "src/mmrisk/demo"
+      ],
+      "tests": [
+        "tests/unit/test_demo_unit.py",
+        "tests/integration/test_demo.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 25,
+      "last_change": "built in Phase 25",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "partly",
+      "real_note": "12 of 12 steps in the sandbox; never run on Windows or through the dev.ps1 tasks.",
+      "limits": [
+        "Windows run pending",
+        "Timings from one run"
+      ],
+      "next": "Run `dev.ps1 demo-check` and `demo` on Windows.",
+      "resume": []
+    },
+    {
+      "id": "portfolio",
+      "name": "Portfolio, resume and interview prep",
+      "phases": "26",
+      "summary": "Bullets with a claims ledger, banned wording, interview answers with sources.",
+      "code": [
+        "docs/portfolio.md",
+        "docs/resume.md",
+        "docs/interview-prep.md"
+      ],
+      "tests": [
+        "tests/unit/test_portfolio_unit.py"
+      ],
+      "ci_jobs": [
+        "lint-and-test"
+      ],
+      "last_phase": 26,
+      "last_change": "built in Phase 26",
+      "uses_windows_suite": false,
+      "author_run": null,
+      "real_world": null,
+      "ran_for_real": "no",
+      "real_note": "Tests run in the sandbox only.",
+      "limits": [
+        "Whether the bullets persuade, and what the author personally did, are not measurable here"
+      ],
+      "next": "Push, record CI, and have someone outside review the bullets.",
+      "resume": []
+    }
+  ]
+}
